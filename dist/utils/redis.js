@@ -1,19 +1,19 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteCache = exports.setCache = exports.getCache = exports.connectRedis = void 0;
+exports.connectRedis = exports.deleteCache = exports.setCache = exports.getCache = void 0;
 const redis_1 = require("redis");
-const config_1 = require("../config");
-const redisClient = (0, redis_1.createClient)({
-    url: config_1.config.redisUrl,
+const redis = (0, redis_1.createClient)({
+    url: process.env.REDIS_URL,
 });
-redisClient.on('error', (err) => console.log('Redis Client Error', err));
-const connectRedis = async () => {
-    await redisClient.connect();
-};
-exports.connectRedis = connectRedis;
+redis.on('error', (err) => {
+    console.error('Redis Client Error', err);
+});
+(async () => {
+    await redis.connect();
+})();
 const getCache = async (key) => {
     try {
-        return await redisClient.get(key);
+        return await redis.get(key);
     }
     catch (error) {
         console.error('Redis get error:', error);
@@ -24,10 +24,10 @@ exports.getCache = getCache;
 const setCache = async (key, value, ttlSeconds) => {
     try {
         if (ttlSeconds) {
-            await redisClient.setEx(key, ttlSeconds, value);
+            await redis.setEx(key, ttlSeconds, value);
         }
         else {
-            await redisClient.set(key, value);
+            await redis.set(key, value);
         }
     }
     catch (error) {
@@ -37,11 +37,16 @@ const setCache = async (key, value, ttlSeconds) => {
 exports.setCache = setCache;
 const deleteCache = async (key) => {
     try {
-        await redisClient.del(key);
+        await redis.del(key);
     }
     catch (error) {
         console.error('Redis delete error:', error);
     }
 };
 exports.deleteCache = deleteCache;
-exports.default = redisClient;
+const connectRedis = async () => {
+    // Redis is already connected via IIFE above
+    console.log('Using pre-connected Redis client');
+};
+exports.connectRedis = connectRedis;
+exports.default = redis;

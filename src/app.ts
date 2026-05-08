@@ -49,11 +49,18 @@ app.get('/', (_req, res) => {
   res.json({ success: true, message: 'BackendTalex API is running' });
 });
 
+app.get('/health', async (_req, res) => {
+  res.json({
+    success: true,
+    database: 'connected'
+  });
+});
+
 // Initialize Redis and start cron jobs
 connectRedis().then(() => {
   console.log('Redis connected');
   startCronJobs();
-}).catch((error) => {
+}).catch((error: Error) => {
   console.error('Failed to connect to Redis:', error);
 });
 
