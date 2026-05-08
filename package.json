@@ -2,11 +2,11 @@
   "name": "backendtalex",
   "version": "0.1.0",
   "private": true,
-  "main": "server/dist/server.js",
+  "main": "server/index.js",
   "scripts": {
     "dev": "ts-node-dev --project server/tsconfig.json --respawn --transpile-only server/src/server.ts",
     "build": "tsc -p server/tsconfig.json",
-    "start": "node server/dist/server.js",
+    "start": "node server/index.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "test": "node test-api.js",
