@@ -85,12 +85,15 @@ app.get('/health', async (_req, res) => {
   });
 });
 
-// Initialize Redis and start cron jobs
+// Initialize Redis and start cron jobs (optional - won't crash if Redis fails)
 connectRedis().then(() => {
-  console.log('Redis connected');
+  console.log('✅ Redis connected');
   startCronJobs();
 }).catch((error: Error) => {
-  console.error('Failed to connect to Redis:', error);
+  console.warn('⚠️ Redis connection failed (optional):', error.message);
+  console.log('🚀 Starting without Redis - some features may be limited');
+  // Still start cron jobs even if Redis fails
+  startCronJobs();
 });
 
 export default app;
