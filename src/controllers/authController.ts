@@ -9,6 +9,7 @@ import { sendVerificationEmail } from '../services/notificationService';
 const signToken = (userId: string, role: string) => jwt.sign({ userId, role }, config.jwtSecret, { expiresIn: '7d' });
 
 export const register = async (req: Request, res: Response) => {
+  console.log(req.body);
   const { name, email, phone, password } = req.body;
   try {
     const existing = await prisma.user.findFirst({ where: { OR: [{ email }, { phone }] } });
