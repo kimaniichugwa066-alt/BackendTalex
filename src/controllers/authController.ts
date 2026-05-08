@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import prisma from '../prisma/client';
 import { config } from '../config';
 import { successResponse, errorResponse } from '../utils/apiResponse';
-import { sendWelcomeEmail } from '../services/notificationService';
+import { sendVerificationEmail } from '../services/notificationService';
 
 const signToken = (userId: string, role: string) => jwt.sign({ userId, role }, config.jwtSecret, { expiresIn: '7d' });
 
@@ -17,16 +17,17 @@ export const register = async (req: Request, res: Response) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+    const verificationToken = jwt.sign({ email }, config.jwtSecret, { expiresIn: '24h' });
     const user = await prisma.user.create({
-      data: { name, email, phone, password: hashedPassword, role: 'USER' },
+      data: { name, email, phone, password: hashedPassword, role: 'USER', verificationToken },
     });
 
     const token = signToken(user.id, user.role);
 
-    // Send welcome email asynchronously
-    sendWelcomeEmail(user.email, user.name).catch(console.error);
+    // Send verification email asynchronously
+    sendVerificationEmail(user.email, user.name, verificationToken).catch(console.error);
 
-    res.json(successResponse('Registration successful', { token, user: { id: user.id, name: user.name, email: user.email, role: user.role } }));
+    res.json(successResponse('Registration successful. Please check your email to verify your account.', { token, user: { id: user.id, name: user.name, email: user.email, role: user.role, isVerified: user.isVerified } }));
   } catch (error) {
     res.status(500).json(errorResponse('Failed to register user', error));
   }
@@ -43,6 +44,10 @@ export const login = async (req: Request, res: Response) => {
     const isValid = await bcrypt.compare(password, user.password);
     if (!isValid) {
       return res.status(401).json(errorResponse('Invalid credentials'));
+    }
+
+    if (!user.isVerified) {
+      return res.status(403).json(errorResponse('Please verify your email before logging in'));
     }
 
     const token = signToken(user.id, user.role);
@@ -73,5 +78,33 @@ export const resetPassword = async (req: Request, res: Response) => {
     res.json(successResponse('Password reset successful'));
   } catch (error) {
     res.status(500).json(errorResponse('Password reset failed', error));
+  }
+};
+
+export const verifyEmail = async (req: Request, res: Response) => {
+  const { token } = req.params;
+  try {
+    const decoded = jwt.verify(token, config.jwtSecret) as { email: string };
+    const user = await prisma.user.findUnique({ where: { email: decoded.email } });
+    if (!user) {
+      return res.status(404).json(errorResponse('User not found'));
+    }
+
+    if (user.isVerified) {
+      return res.status(400).json(errorResponse('Email already verified'));
+    }
+
+    if (user.verificationToken !== token) {
+      return res.status(400).json(errorResponse('Invalid verification token'));
+    }
+
+    await prisma.user.update({
+      where: { email: decoded.email },
+      data: { isVerified: true, verificationToken: null },
+    });
+
+    res.json(successResponse('Email verified successfully'));
+  } catch (error) {
+    res.status(400).json(errorResponse('Invalid or expired verification token'));
   }
 };

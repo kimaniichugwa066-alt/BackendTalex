@@ -2,7 +2,13 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const jobController_1 = require("../controllers/jobController");
+const authMiddleware_1 = require("../middleware/authMiddleware");
+const adminMiddleware_1 = require("../middleware/adminMiddleware");
+const adminController_1 = require("../controllers/adminController");
+const validateRequest_1 = require("../middleware/validateRequest");
+const jobValidator_1 = require("../validators/jobValidator");
 const router = (0, express_1.Router)();
+router.post('/', authMiddleware_1.authMiddleware, adminMiddleware_1.adminMiddleware, (0, validateRequest_1.validateRequest)(jobValidator_1.jobSchema), adminController_1.createJob);
 router.get('/search', jobController_1.searchJobs);
 router.get('/', jobController_1.getJobs);
 router.get('/:id', jobController_1.getJobById);

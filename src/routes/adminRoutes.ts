@@ -2,7 +2,6 @@ import { Router } from 'express';
 import { authMiddleware } from '../middleware/authMiddleware';
 import { adminMiddleware } from '../middleware/adminMiddleware';
 import {
-  createJob,
   updateJob,
   deleteJob,
   getAllApplications,
@@ -18,7 +17,6 @@ const router = Router();
 
 router.use(authMiddleware, adminMiddleware);
 
-router.post('/jobs/create', validateRequest(jobSchema), createJob);
 router.put('/jobs/update/:id', validateRequest(updateJobSchema), updateJob);
 router.delete('/jobs/delete/:id', deleteJob);
 router.get('/applications', getAllApplications);

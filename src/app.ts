@@ -11,6 +11,7 @@ import paymentRoutes from './routes/paymentRoutes';
 import uploadRoutes from './routes/uploadRoutes';
 import notificationRoutes from './routes/notificationRoutes';
 import adminRoutes from './routes/adminRoutes';
+import reportRoutes from './routes/reportRoutes';
 import { errorHandler } from './middleware/errorHandler';
 import { authMiddleware } from './middleware/authMiddleware';
 import { connectRedis } from './utils/redis';
@@ -21,7 +22,10 @@ dotenv.config();
 const app = express();
 
 app.use(helmet());
-app.use(cors());
+app.use(cors({
+  origin: 'https://talex-one.vercel.app',
+  credentials: true
+}));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));
@@ -47,6 +51,7 @@ app.use('/api/payments', authMiddleware, paymentRoutes);
 app.use('/api/upload', authMiddleware, uploadRoutes);
 app.use('/api/notifications', authMiddleware, notificationRoutes);
 app.use('/api/admin', authMiddleware, adminRoutes);
+app.use('/api/report', authMiddleware, reportRoutes);
 
 app.use(errorHandler);
 

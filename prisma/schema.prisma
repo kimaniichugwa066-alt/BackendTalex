@@ -8,18 +8,19 @@ datasource db {
 }
 
 model User {
-  id          String         @id @default(uuid())
-  name        String
-  email       String         @unique
-  phone       String         @unique
-  password    String
-  role        Role           @default(USER)
-  isVerified  Boolean        @default(false)
-  applications Application[]
-  payments    Payment[]
-  documents   Document[]
-  notifications Notification[]
-  createdAt   DateTime       @default(now())
+  id               String         @id @default(uuid())
+  name             String
+  email            String         @unique
+  phone            String         @unique
+  password         String
+  role             Role           @default(USER)
+  isVerified       Boolean        @default(false)
+  verificationToken String?
+  applications     Application[]
+  payments         Payment[]
+  documents        Document[]
+  notifications    Notification[]
+  createdAt        DateTime       @default(now())
 }
 
 model Job {

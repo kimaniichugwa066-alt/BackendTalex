@@ -58,6 +58,20 @@ export const sendWelcomeEmail = async (email: string, name: string) => {
   await sendEmail(email, 'Welcome to Talex', html);
 };
 
+export const sendVerificationEmail = async (email: string, name: string, token: string) => {
+  const verificationUrl = `https://talex-one.vercel.app/verify?token=${token}`;
+  const html = `
+    <h1>Welcome to Talex, ${name}!</h1>
+    <p>Thank you for registering with Talex. Please verify your email address to activate your account.</p>
+    <p><a href="${verificationUrl}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Verify Email</a></p>
+    <p>If the button doesn't work, copy and paste this link into your browser:</p>
+    <p>${verificationUrl}</p>
+    <p>This link will expire in 24 hours.</p>
+    <p>Best regards,<br>The Talex Team</p>
+  `;
+  await sendEmail(email, 'Verify Your Email - Talex', html);
+};
+
 export const sendApplicationSubmittedEmail = async (email: string, jobTitle: string, trackingNumber: string) => {
   const html = `
     <h1>Application Submitted Successfully</h1>

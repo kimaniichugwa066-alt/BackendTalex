@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendPaymentReminderSMS = exports.sendApplicationStatusUpdateEmail = exports.sendApplicationSubmittedEmail = exports.sendWelcomeEmail = exports.sendSMS = exports.sendEmail = void 0;
+exports.sendPaymentReminderSMS = exports.sendApplicationStatusUpdateEmail = exports.sendApplicationSubmittedEmail = exports.sendVerificationEmail = exports.sendWelcomeEmail = exports.sendSMS = exports.sendEmail = void 0;
 const nodemailer_1 = __importDefault(require("nodemailer"));
 const axios_1 = __importDefault(require("axios"));
 const config_1 = require("../config");
@@ -60,6 +60,20 @@ const sendWelcomeEmail = async (email, name) => {
     await (0, exports.sendEmail)(email, 'Welcome to Talex', html);
 };
 exports.sendWelcomeEmail = sendWelcomeEmail;
+const sendVerificationEmail = async (email, name, token) => {
+    const verificationUrl = `https://talex-one.vercel.app/verify?token=${token}`;
+    const html = `
+    <h1>Welcome to Talex, ${name}!</h1>
+    <p>Thank you for registering with Talex. Please verify your email address to activate your account.</p>
+    <p><a href="${verificationUrl}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Verify Email</a></p>
+    <p>If the button doesn't work, copy and paste this link into your browser:</p>
+    <p>${verificationUrl}</p>
+    <p>This link will expire in 24 hours.</p>
+    <p>Best regards,<br>The Talex Team</p>
+  `;
+    await (0, exports.sendEmail)(email, 'Verify Your Email - Talex', html);
+};
+exports.sendVerificationEmail = sendVerificationEmail;
 const sendApplicationSubmittedEmail = async (email, jobTitle, trackingNumber) => {
     const html = `
     <h1>Application Submitted Successfully</h1>
