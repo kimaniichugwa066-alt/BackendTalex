@@ -13,20 +13,20 @@ const notificationService_1 = require("../services/notificationService");
 const signToken = (userId, role) => jsonwebtoken_1.default.sign({ userId, role }, config_1.config.jwtSecret, { expiresIn: '7d' });
 const register = async (req, res) => {
     console.log("REGISTER BODY:", { ...req.body, password: "***" }); // Mask password for security
-    const { name, email, phone, password } = req.body;
+    const { name, email, phoneNumber, password } = req.body;
     // Validate required fields
-    if (!name || !email || !phone || !password) {
-        return res.status(400).json((0, apiResponse_1.errorResponse)('Validation failed: name, email, phone, and password are required'));
+    if (!name || !email || !phoneNumber || !password) {
+        return res.status(400).json((0, apiResponse_1.errorResponse)('Validation failed: name, email, phoneNumber, and password are required'));
     }
     try {
-        const existing = await client_1.default.user.findFirst({ where: { OR: [{ email }, { phone }] } });
+        const existing = await client_1.default.user.findFirst({ where: { OR: [{ email }, { phone: phoneNumber }] } });
         if (existing) {
             return res.status(409).json((0, apiResponse_1.errorResponse)('Email or phone already in use'));
         }
         const hashedPassword = await bcrypt_1.default.hash(password, 10);
         const verificationToken = jsonwebtoken_1.default.sign({ email }, config_1.config.jwtSecret, { expiresIn: '24h' });
         const user = await client_1.default.user.create({
-            data: { name, email, phone, password: hashedPassword, role: 'USER', verificationToken },
+            data: { name: name.trim(), email: email.trim(), phone: phoneNumber.trim(), password: hashedPassword, role: 'USER', verificationToken },
         });
         const token = signToken(user.id, user.role);
         // Send verification email asynchronously

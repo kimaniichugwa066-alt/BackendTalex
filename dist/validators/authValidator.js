@@ -12,7 +12,7 @@ exports.registerSchema = zod_1.z.object({
     body: zod_1.z.object({
         name: zod_1.z.string().min(2).max(100),
         email: zod_1.z.string().regex(emailRegex, 'Invalid email format'),
-        phone: zod_1.z.string().regex(internationalPhoneRegex, 'Invalid phone number. Use format: +[country code][number] or [10-15 digits]'),
+        phoneNumber: zod_1.z.string().regex(internationalPhoneRegex, 'Invalid phone number. Use format: +[country code][number] or [10-15 digits]'),
         password: zod_1.z.string().regex(passwordRegex, 'Password must be at least 8 characters with uppercase, number, and special character'),
     }),
     params: zod_1.z.object({}),

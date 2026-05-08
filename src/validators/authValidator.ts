@@ -13,7 +13,7 @@ export const registerSchema = z.object({
   body: z.object({
     name: z.string().min(2).max(100),
     email: z.string().regex(emailRegex, 'Invalid email format'),
-    phone: z.string().regex(internationalPhoneRegex, 'Invalid phone number. Use format: +[country code][number] or [10-15 digits]'),
+    phoneNumber: z.string().regex(internationalPhoneRegex, 'Invalid phone number. Use format: +[country code][number] or [10-15 digits]'),
     password: z.string().regex(passwordRegex, 'Password must be at least 8 characters with uppercase, number, and special character'),
   }),
   params: z.object({}),

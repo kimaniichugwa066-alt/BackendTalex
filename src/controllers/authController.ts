@@ -10,15 +10,15 @@ const signToken = (userId: string, role: string) => jwt.sign({ userId, role }, c
 
 export const register = async (req: Request, res: Response) => {
   console.log("REGISTER BODY:", { ...req.body, password: "***" }); // Mask password for security
-  const { name, email, phone, password } = req.body;
+  const { name, email, phoneNumber, password } = req.body;
 
   // Validate required fields
-  if (!name || !email || !phone || !password) {
-    return res.status(400).json(errorResponse('Validation failed: name, email, phone, and password are required'));
+  if (!name || !email || !phoneNumber || !password) {
+    return res.status(400).json(errorResponse('Validation failed: name, email, phoneNumber, and password are required'));
   }
 
   try {
-    const existing = await prisma.user.findFirst({ where: { OR: [{ email }, { phone }] } });
+    const existing = await prisma.user.findFirst({ where: { OR: [{ email }, { phone: phoneNumber }] } });
     if (existing) {
       return res.status(409).json(errorResponse('Email or phone already in use'));
     }
@@ -26,7 +26,7 @@ export const register = async (req: Request, res: Response) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const verificationToken = jwt.sign({ email }, config.jwtSecret, { expiresIn: '24h' });
     const user = await prisma.user.create({
-      data: { name, email, phone, password: hashedPassword, role: 'USER', verificationToken },
+      data: { name: name.trim(), email: email.trim(), phone: phoneNumber.trim(), password: hashedPassword, role: 'USER', verificationToken },
     });
 
     const token = signToken(user.id, user.role);
