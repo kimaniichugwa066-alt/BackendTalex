@@ -8,7 +8,6 @@ const validateRequest_1 = require("../middleware/validateRequest");
 const jobValidator_1 = require("../validators/jobValidator");
 const router = (0, express_1.Router)();
 router.use(authMiddleware_1.authMiddleware, adminMiddleware_1.adminMiddleware);
-router.post('/jobs/create', (0, validateRequest_1.validateRequest)(jobValidator_1.jobSchema), adminController_1.createJob);
 router.put('/jobs/update/:id', (0, validateRequest_1.validateRequest)(jobValidator_1.updateJobSchema), adminController_1.updateJob);
 router.delete('/jobs/delete/:id', adminController_1.deleteJob);
 router.get('/applications', adminController_1.getAllApplications);
