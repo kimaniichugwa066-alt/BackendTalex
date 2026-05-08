@@ -60,7 +60,11 @@ app.get('/', (_req, res) => {
 });
 
 app.get('/api', (req, res) => {
-  res.send('API is working 🚀');
+  res.json({
+    status: 'success',
+    message: 'API is working 🚀',
+    uptime: process.uptime()
+  });
 });
 
 app.get('/health', async (_req, res) => {
