@@ -23,6 +23,8 @@ dotenv.config();
 
 const app = express();
 
+app.set('trust proxy', 1); // 👈 MUST BE HERE - Enable trust proxy for rate limiting
+
 app.use(helmet());
 app.use(cors({
   origin: 'https://talex-one.vercel.app',
@@ -34,7 +36,7 @@ app.use(morgan('dev'));
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 120,
+  max: 100, // Reduced from 120 to 100 (recommended)
   standardHeaders: true,
   legacyHeaders: false,
 });
