@@ -12,8 +12,12 @@ const apiResponse_1 = require("../utils/apiResponse");
 const notificationService_1 = require("../services/notificationService");
 const signToken = (userId, role) => jsonwebtoken_1.default.sign({ userId, role }, config_1.config.jwtSecret, { expiresIn: '7d' });
 const register = async (req, res) => {
-    console.log(req.body);
+    console.log("REGISTER BODY:", { ...req.body, password: "***" }); // Mask password for security
     const { name, email, phone, password } = req.body;
+    // Validate required fields
+    if (!name || !email || !phone || !password) {
+        return res.status(400).json((0, apiResponse_1.errorResponse)('Validation failed: name, email, phone, and password are required'));
+    }
     try {
         const existing = await client_1.default.user.findFirst({ where: { OR: [{ email }, { phone }] } });
         if (existing) {
@@ -35,8 +39,11 @@ const register = async (req, res) => {
 };
 exports.register = register;
 const login = async (req, res) => {
-    const { email, password } = req.body;
     try {
+        const { email, password } = req.body;
+        if (!email || !password) {
+            return res.status(400).json((0, apiResponse_1.errorResponse)('Email and password are required'));
+        }
         const user = await client_1.default.user.findUnique({ where: { email } });
         if (!user) {
             return res.status(401).json((0, apiResponse_1.errorResponse)('Invalid credentials'));
@@ -52,7 +59,8 @@ const login = async (req, res) => {
         res.json((0, apiResponse_1.successResponse)('Login successful', { token, user: { id: user.id, name: user.name, email: user.email, role: user.role } }));
     }
     catch (error) {
-        res.status(500).json((0, apiResponse_1.errorResponse)('Login failed', error));
+        console.error("LOGIN ERROR:", error);
+        res.status(500).json((0, apiResponse_1.errorResponse)('Server error'));
     }
 };
 exports.login = login;

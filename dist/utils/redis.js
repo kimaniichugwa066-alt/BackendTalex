@@ -9,7 +9,13 @@ redis.on('error', (err) => {
     console.error('Redis Client Error', err);
 });
 (async () => {
-    await redis.connect();
+    try {
+        await redis.connect();
+        console.log('Redis client connected successfully');
+    }
+    catch (error) {
+        console.warn('Redis connection failed during initialization:', error instanceof Error ? error.message : String(error));
+    }
 })();
 const getCache = async (key) => {
     try {

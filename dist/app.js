@@ -25,6 +25,7 @@ const redis_1 = require("./utils/redis");
 const cronJobs_1 = require("./jobs/cronJobs");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
+app.set('trust proxy', 1); // 👈 MUST BE HERE - Enable trust proxy for rate limiting
 app.use((0, helmet_1.default)());
 app.use((0, cors_1.default)({
     origin: 'https://talex-one.vercel.app',
@@ -35,9 +36,9 @@ app.use(express_1.default.urlencoded({ extended: true }));
 app.use((0, morgan_1.default)('dev'));
 const limiter = (0, express_rate_limit_1.default)({
     windowMs: 15 * 60 * 1000,
-    max: 120,
+    max: 100, // Reduced from 120 to 100 (recommended)
     standardHeaders: true,
-    legacyHeaders: false,
+    legacyHeaders: false
 });
 app.use(limiter);
 // Handle favicon requests
@@ -71,11 +72,14 @@ app.get('/health', async (_req, res) => {
         database: 'connected'
     });
 });
-// Initialize Redis and start cron jobs
+// Initialize Redis and start cron jobs (optional - won't crash if Redis fails)
 (0, redis_1.connectRedis)().then(() => {
-    console.log('Redis connected');
+    console.log('✅ Redis connected');
     (0, cronJobs_1.startCronJobs)();
 }).catch((error) => {
-    console.error('Failed to connect to Redis:', error);
+    console.warn('⚠️ Redis connection failed (optional):', error.message);
+    console.log('🚀 Starting without Redis - some features may be limited');
+    // Still start cron jobs even if Redis fails
+    (0, cronJobs_1.startCronJobs)();
 });
 exports.default = app;

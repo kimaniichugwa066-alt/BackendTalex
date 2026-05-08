@@ -2,11 +2,12 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateProfileSchema = void 0;
 const zod_1 = require("zod");
-const kenyaPhoneRegex = /^(?:\+254|0)7\d{8}$/;
+// Allow international phone format: with optional +, 10-15 digits
+const internationalPhoneRegex = /^\+?\d{10,15}$/;
 exports.updateProfileSchema = zod_1.z.object({
     body: zod_1.z.object({
-        name: zod_1.z.string().min(2).optional(),
-        phone: zod_1.z.string().regex(kenyaPhoneRegex, 'Invalid Kenyan phone number').optional(),
+        name: zod_1.z.string().min(2).max(100).optional(),
+        phone: zod_1.z.string().regex(internationalPhoneRegex, 'Invalid phone number. Use format: +[country code][number] or [10-15 digits]').optional(),
         headline: zod_1.z.string().max(120).optional(),
         location: zod_1.z.string().max(100).optional(),
         summary: zod_1.z.string().max(1000).optional(),

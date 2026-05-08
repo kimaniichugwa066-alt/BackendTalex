@@ -9,8 +9,14 @@ import { sendVerificationEmail, sendPasswordResetEmail, sendWelcomeEmail } from 
 const signToken = (userId: string, role: string) => jwt.sign({ userId, role }, config.jwtSecret, { expiresIn: '7d' });
 
 export const register = async (req: Request, res: Response) => {
-  console.log(req.body);
+  console.log("REGISTER BODY:", { ...req.body, password: "***" }); // Mask password for security
   const { name, email, phone, password } = req.body;
+
+  // Validate required fields
+  if (!name || !email || !phone || !password) {
+    return res.status(400).json(errorResponse('Validation failed: name, email, phone, and password are required'));
+  }
+
   try {
     const existing = await prisma.user.findFirst({ where: { OR: [{ email }, { phone }] } });
     if (existing) {
@@ -35,8 +41,13 @@ export const register = async (req: Request, res: Response) => {
 };
 
 export const login = async (req: Request, res: Response) => {
-  const { email, password } = req.body;
   try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json(errorResponse('Email and password are required'));
+    }
+
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
       return res.status(401).json(errorResponse('Invalid credentials'));
@@ -54,7 +65,8 @@ export const login = async (req: Request, res: Response) => {
     const token = signToken(user.id, user.role);
     res.json(successResponse('Login successful', { token, user: { id: user.id, name: user.name, email: user.email, role: user.role } }));
   } catch (error) {
-    res.status(500).json(errorResponse('Login failed', error));
+    console.error("LOGIN ERROR:", error);
+    res.status(500).json(errorResponse('Server error'));
   }
 };
 

@@ -13,7 +13,7 @@ redis.on('error', (err) => {
     await redis.connect();
     console.log('Redis client connected successfully');
   } catch (error) {
-    console.warn('Redis connection failed during initialization:', error.message);
+    console.warn('Redis connection failed during initialization:', error instanceof Error ? error.message : String(error));
   }
 })();
 

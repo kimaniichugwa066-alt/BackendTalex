@@ -38,12 +38,7 @@ const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100, // Reduced from 120 to 100 (recommended)
   standardHeaders: true,
-  legacyHeaders: false,
-
-  // IMPORTANT FIX: Disable X-Forwarded-For header validation
-  validate: {
-    xForwardedForHeader: false
-  }
+  legacyHeaders: false
 });
 
 app.use(limiter);

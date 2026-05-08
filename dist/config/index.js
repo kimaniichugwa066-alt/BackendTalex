@@ -7,7 +7,7 @@ exports.config = void 0;
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 exports.config = {
-    port: process.env.PORT || '4000',
+    port: process.env.PORT || '10000',
     jwtSecret: process.env.JWT_SECRET || 'secret-key',
     databaseUrl: process.env.DATABASE_URL || '',
     mpesa: {

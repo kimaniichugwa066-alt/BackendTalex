@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const app_1 = __importDefault(require("./app"));
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
-const port = process.env.PORT ? Number(process.env.PORT) : 4000;
-app_1.default.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}`);
+const PORT = process.env.PORT || 10000;
+app_1.default.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });
