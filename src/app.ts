@@ -12,6 +12,8 @@ import uploadRoutes from './routes/uploadRoutes';
 import notificationRoutes from './routes/notificationRoutes';
 import adminRoutes from './routes/adminRoutes';
 import reportRoutes from './routes/reportRoutes';
+import profileRoutes from './routes/profileRoutes';
+import supportRoutes from './routes/supportRoutes';
 import { errorHandler } from './middleware/errorHandler';
 import { authMiddleware } from './middleware/authMiddleware';
 import { connectRedis } from './utils/redis';
@@ -50,6 +52,8 @@ app.use('/api/applications', authMiddleware, applicationRoutes);
 app.use('/api/payments', authMiddleware, paymentRoutes);
 app.use('/api/upload', authMiddleware, uploadRoutes);
 app.use('/api/notifications', authMiddleware, notificationRoutes);
+app.use('/api/profile', authMiddleware, profileRoutes);
+app.use('/api/support', authMiddleware, supportRoutes);
 app.use('/api/admin', authMiddleware, adminRoutes);
 app.use('/api/report', authMiddleware, reportRoutes);
 

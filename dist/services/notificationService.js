@@ -3,28 +3,26 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendPaymentReminderSMS = exports.sendApplicationStatusUpdateEmail = exports.sendApplicationSubmittedEmail = exports.sendVerificationEmail = exports.sendWelcomeEmail = exports.sendSMS = exports.sendEmail = void 0;
-const nodemailer_1 = __importDefault(require("nodemailer"));
+exports.sendPaymentReminderSMS = exports.sendPasswordResetEmail = exports.sendApplicationStatusUpdateEmail = exports.sendApplicationSubmittedEmail = exports.sendVerificationEmail = exports.sendWelcomeEmail = exports.sendSMS = exports.sendEmail = void 0;
 const axios_1 = __importDefault(require("axios"));
 const config_1 = require("../config");
-const emailTransporter = nodemailer_1.default.createTransport({
-    host: config_1.config.email.host,
-    port: config_1.config.email.port,
-    secure: config_1.config.email.port === 465,
-    auth: {
-        user: config_1.config.email.user,
-        pass: config_1.config.email.pass,
-    },
-});
 const sendEmail = async (to, subject, html) => {
     try {
-        await emailTransporter.sendMail({
-            from: config_1.config.email.user,
-            to,
+        const response = await axios_1.default.post('https://api.brevo.com/v3/smtp/email', {
+            sender: {
+                name: config_1.config.brevo.senderName,
+                email: config_1.config.brevo.senderEmail,
+            },
+            to: [{ email: to }],
             subject,
-            html,
+            htmlContent: html,
+        }, {
+            headers: {
+                'api-key': config_1.config.brevo.apiKey,
+                'Content-Type': 'application/json',
+            },
         });
-        console.log(`Email sent to ${to}`);
+        console.log(`Email sent to ${to}`, response.data);
     }
     catch (error) {
         console.error('Email send error:', error);
@@ -96,6 +94,22 @@ const sendApplicationStatusUpdateEmail = async (email, jobTitle, status) => {
     await (0, exports.sendEmail)(email, `Application ${status}`, html);
 };
 exports.sendApplicationStatusUpdateEmail = sendApplicationStatusUpdateEmail;
+const sendPasswordResetEmail = async (email, name, token) => {
+    const resetUrl = `https://talex-one.vercel.app/reset-password?token=${token}`;
+    const html = `
+    <h1>Password Reset Request</h1>
+    <p>Hi ${name},</p>
+    <p>You requested a password reset for your Talex account. Click the button below to reset your password:</p>
+    <p><a href="${resetUrl}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Reset Password</a></p>
+    <p>If the button doesn't work, copy and paste this link into your browser:</p>
+    <p>${resetUrl}</p>
+    <p>This link will expire in 1 hour.</p>
+    <p>If you didn't request this, please ignore this email.</p>
+    <p>Best regards,<br>The Talex Team</p>
+  `;
+    await (0, exports.sendEmail)(email, 'Reset Your Password - Talex', html);
+};
+exports.sendPasswordResetEmail = sendPasswordResetEmail;
 const sendPaymentReminderSMS = async (phone, jobTitle) => {
     const message = `Hi! Complete your payment for ${jobTitle} application on Talex. Ksh 500 required.`;
     await (0, exports.sendSMS)(phone, message);

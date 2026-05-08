@@ -17,6 +17,8 @@ const uploadRoutes_1 = __importDefault(require("./routes/uploadRoutes"));
 const notificationRoutes_1 = __importDefault(require("./routes/notificationRoutes"));
 const adminRoutes_1 = __importDefault(require("./routes/adminRoutes"));
 const reportRoutes_1 = __importDefault(require("./routes/reportRoutes"));
+const profileRoutes_1 = __importDefault(require("./routes/profileRoutes"));
+const supportRoutes_1 = __importDefault(require("./routes/supportRoutes"));
 const errorHandler_1 = require("./middleware/errorHandler");
 const authMiddleware_1 = require("./middleware/authMiddleware");
 const redis_1 = require("./utils/redis");
@@ -38,17 +40,30 @@ const limiter = (0, express_rate_limit_1.default)({
     legacyHeaders: false,
 });
 app.use(limiter);
+// Handle favicon requests
+app.get('/favicon.ico', (_req, res) => {
+    res.status(204).send();
+});
 app.use('/api/auth', authRoutes_1.default);
 app.use('/api/jobs', jobRoutes_1.default);
 app.use('/api/applications', authMiddleware_1.authMiddleware, applicationRoutes_1.default);
 app.use('/api/payments', authMiddleware_1.authMiddleware, paymentRoutes_1.default);
 app.use('/api/upload', authMiddleware_1.authMiddleware, uploadRoutes_1.default);
 app.use('/api/notifications', authMiddleware_1.authMiddleware, notificationRoutes_1.default);
+app.use('/api/profile', authMiddleware_1.authMiddleware, profileRoutes_1.default);
+app.use('/api/support', authMiddleware_1.authMiddleware, supportRoutes_1.default);
 app.use('/api/admin', authMiddleware_1.authMiddleware, adminRoutes_1.default);
 app.use('/api/report', authMiddleware_1.authMiddleware, reportRoutes_1.default);
 app.use(errorHandler_1.errorHandler);
 app.get('/', (_req, res) => {
     res.json({ success: true, message: 'BackendTalex API is running' });
+});
+app.get('/api', (req, res) => {
+    res.json({
+        status: 'success',
+        message: 'API is working 🚀',
+        uptime: process.uptime()
+    });
 });
 app.get('/health', async (_req, res) => {
     res.json({

@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyEmail = exports.resetPassword = exports.logout = exports.refreshToken = exports.login = exports.register = void 0;
+exports.verifyEmail = exports.resetPassword = exports.forgotPassword = exports.logout = exports.refreshToken = exports.login = exports.register = void 0;
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const client_1 = __importDefault(require("../prisma/client"));
@@ -12,6 +12,7 @@ const apiResponse_1 = require("../utils/apiResponse");
 const notificationService_1 = require("../services/notificationService");
 const signToken = (userId, role) => jsonwebtoken_1.default.sign({ userId, role }, config_1.config.jwtSecret, { expiresIn: '7d' });
 const register = async (req, res) => {
+    console.log(req.body);
     const { name, email, phone, password } = req.body;
     try {
         const existing = await client_1.default.user.findFirst({ where: { OR: [{ email }, { phone }] } });
@@ -63,19 +64,47 @@ const logout = async (_req, res) => {
     res.json((0, apiResponse_1.successResponse)('Logout successful'));
 };
 exports.logout = logout;
-const resetPassword = async (req, res) => {
-    const { email, newPassword } = req.body;
+const forgotPassword = async (req, res) => {
+    const { email } = req.body;
     try {
         const user = await client_1.default.user.findUnique({ where: { email } });
         if (!user) {
             return res.status(404).json((0, apiResponse_1.errorResponse)('User not found'));
         }
+        const resetToken = jsonwebtoken_1.default.sign({ email }, config_1.config.jwtSecret, { expiresIn: '1h' });
+        await client_1.default.user.update({
+            where: { email },
+            data: { resetToken },
+        });
+        // Send password reset email asynchronously
+        (0, notificationService_1.sendPasswordResetEmail)(user.email, user.name, resetToken).catch(console.error);
+        res.json((0, apiResponse_1.successResponse)('Password reset email sent. Please check your email.'));
+    }
+    catch (error) {
+        res.status(500).json((0, apiResponse_1.errorResponse)('Failed to send password reset email', error));
+    }
+};
+exports.forgotPassword = forgotPassword;
+const resetPassword = async (req, res) => {
+    const { token, newPassword } = req.body;
+    try {
+        const decoded = jsonwebtoken_1.default.verify(token, config_1.config.jwtSecret);
+        const user = await client_1.default.user.findUnique({ where: { email: decoded.email } });
+        if (!user) {
+            return res.status(404).json((0, apiResponse_1.errorResponse)('User not found'));
+        }
+        if (user.resetToken !== token) {
+            return res.status(400).json((0, apiResponse_1.errorResponse)('Invalid reset token'));
+        }
         const hashedPassword = await bcrypt_1.default.hash(newPassword, 10);
-        await client_1.default.user.update({ where: { email }, data: { password: hashedPassword } });
+        await client_1.default.user.update({
+            where: { email: decoded.email },
+            data: { password: hashedPassword, resetToken: null },
+        });
         res.json((0, apiResponse_1.successResponse)('Password reset successful'));
     }
     catch (error) {
-        res.status(500).json((0, apiResponse_1.errorResponse)('Password reset failed', error));
+        res.status(400).json((0, apiResponse_1.errorResponse)('Invalid or expired reset token'));
     }
 };
 exports.resetPassword = resetPassword;
@@ -97,6 +126,8 @@ const verifyEmail = async (req, res) => {
             where: { email: decoded.email },
             data: { isVerified: true, verificationToken: null },
         });
+        // Send welcome email after successful verification
+        (0, notificationService_1.sendWelcomeEmail)(user.email, user.name).catch(console.error);
         res.json((0, apiResponse_1.successResponse)('Email verified successfully'));
     }
     catch (error) {

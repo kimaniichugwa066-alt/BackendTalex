@@ -16,11 +16,34 @@ model User {
   role             Role           @default(USER)
   isVerified       Boolean        @default(false)
   verificationToken String?
+  resetToken       String?
+  headline         String?
+  location         String?
+  summary          String?
+  experience       String?
+  education        String?
+  linkedIn         String?
   applications     Application[]
   payments         Payment[]
   documents        Document[]
   notifications    Notification[]
+  supportRequests  SupportRequest[]
   createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+}
+
+model SupportRequest {
+  id        String          @id @default(uuid())
+  user      User            @relation(fields: [userId], references: [id])
+  userId    String
+  category  SupportCategory
+  subject   String
+  message   String
+  status    SupportStatus   @default(OPEN)
+  reply     String?
+  repliedAt DateTime?
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
 }
 
 model Job {
@@ -115,4 +138,16 @@ enum DocumentType {
   CV
   PASSPORT
   CERTIFICATE
+}
+
+enum SupportCategory {
+  TECHNICAL
+  PAYMENT
+  JOB_POSTING
+  OTHER
+}
+
+enum SupportStatus {
+  OPEN
+  CLOSED
 }

@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import prisma from '../prisma/client';
 import { successResponse, errorResponse } from '../utils/apiResponse';
-import { sendApplicationStatusUpdateEmail } from '../services/notificationService';
+import { sendApplicationStatusUpdateEmail, sendEmail } from '../services/notificationService';
 import { invalidateJobsCache, invalidateJobDetailCache, invalidateDashboardCache, cacheDashboardStats, getCachedDashboardStats } from '../services/cacheService';
 
 export const createJob = async (req: Request, res: Response) => {
@@ -105,6 +105,47 @@ export const getAllPayments = async (_req: Request, res: Response) => {
     res.json(successResponse('Payments loaded', { payments }));
   } catch (error) {
     res.status(500).json(errorResponse('Failed to load payments', error));
+  }
+};
+
+export const getAllSupportRequests = async (_req: Request, res: Response) => {
+  try {
+    const supportRequests = await prisma.supportRequest.findMany({
+      include: { user: { select: { id: true, name: true, email: true, phone: true } } },
+      orderBy: { createdAt: 'desc' },
+    });
+    res.json(successResponse('Support requests loaded', { supportRequests }));
+  } catch (error) {
+    res.status(500).json(errorResponse('Failed to load support requests', error));
+  }
+};
+
+export const replySupportRequest = async (req: Request, res: Response) => {
+  const { requestId, reply } = req.body;
+  try {
+    const supportRequest = await prisma.supportRequest.update({
+      where: { id: requestId },
+      data: {
+        reply,
+        status: 'CLOSED',
+        repliedAt: new Date(),
+      },
+      include: { user: true },
+    });
+
+    const html = `
+      <h1>Support Request Response</h1>
+      <p>Thank you for contacting Talex Support.</p>
+      <p><strong>Your Issue:</strong> ${supportRequest.subject}</p>
+      <p><strong>Our Response:</strong><br/>${reply}</p>
+      <p>Best regards,<br>The Talex Team</p>
+    `;
+
+    sendEmail(supportRequest.user.email, `Re: ${supportRequest.subject}`, html).catch(console.error);
+
+    res.json(successResponse('Support request replied', { supportRequest }));
+  } catch (error) {
+    res.status(500).json(errorResponse('Failed to reply to support request', error));
   }
 };
 

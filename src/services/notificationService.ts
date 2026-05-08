@@ -1,26 +1,27 @@
-import nodemailer from 'nodemailer';
 import axios from 'axios';
 import { config } from '../config';
 
-const emailTransporter = nodemailer.createTransport({
-  host: config.email.host,
-  port: config.email.port,
-  secure: config.email.port === 465,
-  auth: {
-    user: config.email.user,
-    pass: config.email.pass,
-  },
-});
-
 export const sendEmail = async (to: string, subject: string, html: string) => {
   try {
-    await emailTransporter.sendMail({
-      from: config.email.user,
-      to,
-      subject,
-      html,
-    });
-    console.log(`Email sent to ${to}`);
+    const response = await axios.post(
+      'https://api.brevo.com/v3/smtp/email',
+      {
+        sender: {
+          name: config.brevo.senderName,
+          email: config.brevo.senderEmail,
+        },
+        to: [{ email: to }],
+        subject,
+        htmlContent: html,
+      },
+      {
+        headers: {
+          'api-key': config.brevo.apiKey,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    console.log(`Email sent to ${to}`, response.data);
   } catch (error) {
     console.error('Email send error:', error);
   }
@@ -92,6 +93,22 @@ export const sendApplicationStatusUpdateEmail = async (email: string, jobTitle: 
     <p>Best regards,<br>The Talex Team</p>
   `;
   await sendEmail(email, `Application ${status}`, html);
+};
+
+export const sendPasswordResetEmail = async (email: string, name: string, token: string) => {
+  const resetUrl = `https://talex-one.vercel.app/reset-password?token=${token}`;
+  const html = `
+    <h1>Password Reset Request</h1>
+    <p>Hi ${name},</p>
+    <p>You requested a password reset for your Talex account. Click the button below to reset your password:</p>
+    <p><a href="${resetUrl}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Reset Password</a></p>
+    <p>If the button doesn't work, copy and paste this link into your browser:</p>
+    <p>${resetUrl}</p>
+    <p>This link will expire in 1 hour.</p>
+    <p>If you didn't request this, please ignore this email.</p>
+    <p>Best regards,<br>The Talex Team</p>
+  `;
+  await sendEmail(email, 'Reset Your Password - Talex', html);
 };
 
 export const sendPaymentReminderSMS = async (phone: string, jobTitle: string) => {

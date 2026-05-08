@@ -23,6 +23,13 @@ export const config = {
     user: process.env.EMAIL_USER || '',
     pass: process.env.EMAIL_PASS || '',
   },
+  brevo: {
+    apiKey: process.env.BREVO_API_KEY || '',
+    senderEmail: process.env.BREVO_SENDER_EMAIL || '',
+    senderName: process.env.BREVO_SENDER_NAME || 'Talex Team',
+  },
+  supportEmail: process.env.SUPPORT_EMAIL || process.env.EMAIL_USER || '',
+
   sms: {
     apiKey: process.env.SMS_API_KEY || '',
     username: process.env.SMS_USERNAME || '',

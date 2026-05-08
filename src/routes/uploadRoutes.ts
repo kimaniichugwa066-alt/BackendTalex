@@ -1,10 +1,20 @@
 import { Router } from 'express';
-import multer from 'multer';
-import { uploadDocument } from '../controllers/uploadController';
+import upload from '../middleware/upload.js';
 
 const router = Router();
-const upload = multer({ dest: '/tmp/uploads' });
 
-router.post('/', upload.single('file'), uploadDocument);
+router.post("/upload-resume", upload.single("resume"), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+    res.json({
+      success: true,
+      fileUrl: req.file.path
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Upload failed" });
+  }
+});
 
 export default router;

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateApplicationStatusSchema = exports.updateJobSchema = exports.jobSchema = void 0;
+exports.replySupportRequestSchema = exports.updateApplicationStatusSchema = exports.updateJobSchema = exports.jobSchema = void 0;
 const zod_1 = require("zod");
 const jobPayload = zod_1.z.object({
     title: zod_1.z.string().min(3),
@@ -30,6 +30,14 @@ exports.updateApplicationStatusSchema = zod_1.z.object({
     body: zod_1.z.object({
         applicationId: zod_1.z.string().uuid(),
         status: zod_1.z.enum(['SUBMITTED', 'REVIEWED', 'SHORTLISTED', 'INTERVIEW', 'APPROVED', 'REJECTED']),
+    }),
+    params: zod_1.z.object({}),
+    query: zod_1.z.object({}),
+});
+exports.replySupportRequestSchema = zod_1.z.object({
+    body: zod_1.z.object({
+        requestId: zod_1.z.string().uuid(),
+        reply: zod_1.z.string().min(10),
     }),
     params: zod_1.z.object({}),
     query: zod_1.z.object({}),

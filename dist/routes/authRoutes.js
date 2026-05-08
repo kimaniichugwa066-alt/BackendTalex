@@ -10,5 +10,6 @@ router.post('/login', (0, validateRequest_1.validateRequest)(authValidator_1.log
 router.get('/verify/:token', authController_1.verifyEmail);
 router.post('/refresh', authController_1.refreshToken);
 router.post('/logout', authController_1.logout);
-router.post('/reset-password', (0, validateRequest_1.validateRequest)(authValidator_1.resetPasswordSchema), authController_1.resetPassword);
+router.post('/forgot-password', (0, validateRequest_1.validateRequest)(authValidator_1.forgotPasswordSchema), authController_1.forgotPassword);
+router.post('/reset-password', (0, validateRequest_1.validateRequest)(authValidator_1.resetPasswordWithTokenSchema), authController_1.resetPassword);
 exports.default = router;

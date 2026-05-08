@@ -12,6 +12,8 @@ router.put('/jobs/update/:id', (0, validateRequest_1.validateRequest)(jobValidat
 router.delete('/jobs/delete/:id', adminController_1.deleteJob);
 router.get('/applications', adminController_1.getAllApplications);
 router.patch('/applications/update-status', (0, validateRequest_1.validateRequest)(jobValidator_1.updateApplicationStatusSchema), adminController_1.updateApplicationStatus);
+router.get('/support-requests', adminController_1.getAllSupportRequests);
+router.patch('/support-requests/reply', (0, validateRequest_1.validateRequest)(jobValidator_1.replySupportRequestSchema), adminController_1.replySupportRequest);
 router.get('/users', adminController_1.getAllUsers);
 router.get('/payments', adminController_1.getAllPayments);
 router.get('/dashboard', adminController_1.getDashboardStats);

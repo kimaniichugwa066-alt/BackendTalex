@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getDashboardStats = exports.getAllPayments = exports.getAllUsers = exports.updateApplicationStatus = exports.getAllApplications = exports.deleteJob = exports.updateJob = exports.createJob = void 0;
+exports.getDashboardStats = exports.replySupportRequest = exports.getAllSupportRequests = exports.getAllPayments = exports.getAllUsers = exports.updateApplicationStatus = exports.getAllApplications = exports.deleteJob = exports.updateJob = exports.createJob = void 0;
 const client_1 = __importDefault(require("../prisma/client"));
 const apiResponse_1 = require("../utils/apiResponse");
 const notificationService_1 = require("../services/notificationService");
@@ -109,6 +109,46 @@ const getAllPayments = async (_req, res) => {
     }
 };
 exports.getAllPayments = getAllPayments;
+const getAllSupportRequests = async (_req, res) => {
+    try {
+        const supportRequests = await client_1.default.supportRequest.findMany({
+            include: { user: { select: { id: true, name: true, email: true, phone: true } } },
+            orderBy: { createdAt: 'desc' },
+        });
+        res.json((0, apiResponse_1.successResponse)('Support requests loaded', { supportRequests }));
+    }
+    catch (error) {
+        res.status(500).json((0, apiResponse_1.errorResponse)('Failed to load support requests', error));
+    }
+};
+exports.getAllSupportRequests = getAllSupportRequests;
+const replySupportRequest = async (req, res) => {
+    const { requestId, reply } = req.body;
+    try {
+        const supportRequest = await client_1.default.supportRequest.update({
+            where: { id: requestId },
+            data: {
+                reply,
+                status: 'CLOSED',
+                repliedAt: new Date(),
+            },
+            include: { user: true },
+        });
+        const html = `
+      <h1>Support Request Response</h1>
+      <p>Thank you for contacting Talex Support.</p>
+      <p><strong>Your Issue:</strong> ${supportRequest.subject}</p>
+      <p><strong>Our Response:</strong><br/>${reply}</p>
+      <p>Best regards,<br>The Talex Team</p>
+    `;
+        (0, notificationService_1.sendEmail)(supportRequest.user.email, `Re: ${supportRequest.subject}`, html).catch(console.error);
+        res.json((0, apiResponse_1.successResponse)('Support request replied', { supportRequest }));
+    }
+    catch (error) {
+        res.status(500).json((0, apiResponse_1.errorResponse)('Failed to reply to support request', error));
+    }
+};
+exports.replySupportRequest = replySupportRequest;
 const getDashboardStats = async (_req, res) => {
     try {
         // Try to get from cache first

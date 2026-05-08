@@ -10,6 +10,10 @@ A backend scaffold for the Canada Jobs Application Platform.
 - M-Pesa STK push payment flow
 - Cloudinary document uploads
 - Admin job management and reporting
+- Job search and matching tailored for Kenyan applicants
+- User registration with Kenyan phone number support
+- Profile management and resume updates
+- Contact support and issue reporting workflows
 - Validation with Zod
 - Security with Helmet, CORS, and rate limiting
 - **Email & SMS notifications**
@@ -112,7 +116,7 @@ This creates an admin user with:
 ## API Endpoints
 
 ### Authentication
-- `POST /api/auth/register` - User registration
+- `POST /api/auth/register` - User registration with Kenyan phone support
 - `POST /api/auth/login` - User/Admin login
 - `POST /api/auth/logout` - Logout
 - `POST /api/auth/reset-password` - Password reset
@@ -126,6 +130,14 @@ This creates an admin user with:
 - `POST /api/applications/create` - Submit job application (requires payment)
 - `GET /api/applications/user` - Get user's applications
 - `GET /api/applications/:id` - Get application details
+
+### Profile Management
+- `GET /api/profile` - Get current user profile
+- `PUT /api/profile` - Update profile, resume summary, experience, and LinkedIn
+
+### Support & Issue Reporting
+- `POST /api/support` - Send contact support or issue report with category, subject, and message
+- `GET /api/support` - Get current user's support requests
 
 ### Payments
 - `POST /api/payments/stkpush` - Initiate M-Pesa payment
@@ -145,6 +157,8 @@ This creates an admin user with:
 - `DELETE /api/admin/jobs/delete/:id` - Delete job
 - `GET /api/admin/applications` - View all applications
 - `PATCH /api/admin/applications/update-status` - Update application status
+- `GET /api/admin/support-requests` - View all support requests
+- `PATCH /api/admin/support-requests/reply` - Reply to support request and close it
 - `GET /api/admin/users` - View all users
 - `GET /api/admin/payments` - View all payments
 - `GET /api/admin/dashboard` - Dashboard statistics

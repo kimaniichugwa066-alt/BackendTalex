@@ -4,9 +4,20 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const multer_1 = __importDefault(require("multer"));
-const uploadController_1 = require("../controllers/uploadController");
+const upload_js_1 = __importDefault(require("../middleware/upload.js"));
 const router = (0, express_1.Router)();
-const upload = (0, multer_1.default)({ dest: '/tmp/uploads' });
-router.post('/', upload.single('file'), uploadController_1.uploadDocument);
+router.post("/upload-resume", upload_js_1.default.single("resume"), (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ message: "No file uploaded" });
+        }
+        res.json({
+            success: true,
+            fileUrl: req.file.path
+        });
+    }
+    catch (error) {
+        res.status(500).json({ message: "Upload failed" });
+    }
+});
 exports.default = router;

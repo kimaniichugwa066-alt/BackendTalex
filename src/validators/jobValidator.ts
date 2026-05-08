@@ -35,3 +35,12 @@ export const updateApplicationStatusSchema = z.object({
   params: z.object({}),
   query: z.object({}),
 });
+
+export const replySupportRequestSchema = z.object({
+  body: z.object({
+    requestId: z.string().uuid(),
+    reply: z.string().min(10),
+  }),
+  params: z.object({}),
+  query: z.object({}),
+});
