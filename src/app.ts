@@ -35,6 +35,11 @@ const limiter = rateLimit({
 
 app.use(limiter);
 
+// Handle favicon requests
+app.get('/favicon.ico', (_req, res) => {
+  res.status(204).send();
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/jobs', jobRoutes);
 app.use('/api/applications', authMiddleware, applicationRoutes);
@@ -47,6 +52,10 @@ app.use(errorHandler);
 
 app.get('/', (_req, res) => {
   res.json({ success: true, message: 'BackendTalex API is running' });
+});
+
+app.get('/api', (req, res) => {
+  res.send('API is working 🚀');
 });
 
 app.get('/health', async (_req, res) => {
