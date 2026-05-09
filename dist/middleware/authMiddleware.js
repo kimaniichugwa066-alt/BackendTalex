@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.authMiddleware = void 0;
+exports.adminOnly = exports.authMiddleware = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const client_1 = __importDefault(require("../prisma/client"));
 const config_1 = require("../config");
@@ -27,3 +27,14 @@ const authMiddleware = async (req, res, next) => {
     }
 };
 exports.authMiddleware = authMiddleware;
+// 👑 Admin-only middleware
+const adminOnly = (req, res, next) => {
+    if (!req.user) {
+        return res.status(401).json({ success: false, message: 'Not authorized' });
+    }
+    if (req.user.role !== 'ADMIN' && req.user.role !== 'admin') {
+        return res.status(403).json({ success: false, message: 'Admins only' });
+    }
+    next();
+};
+exports.adminOnly = adminOnly;

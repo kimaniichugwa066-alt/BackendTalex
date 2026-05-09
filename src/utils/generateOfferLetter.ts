@@ -1,4 +1,4 @@
-import PDFDocument from "pdfkit";
+const PDFDocument = require("pdfkit");
 
 interface Application {
   _id: string;

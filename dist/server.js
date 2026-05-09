@@ -5,13 +5,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const app_1 = __importDefault(require("./app"));
 const dotenv_1 = __importDefault(require("dotenv"));
-const db_1 = __importDefault(require("../db"));
+const mongoose_1 = __importDefault(require("mongoose"));
 dotenv_1.default.config();
 const PORT = process.env.PORT || 10000;
-// Test PostgreSQL connection
-db_1.default.connect()
+const MONGO_URI = process.env.MONGO_URI || '';
+// Connect to MongoDB
+mongoose_1.default.connect(MONGO_URI)
     .then(() => {
-    console.log("✅ PostgreSQL connected");
+    console.log("✅ MongoDB Connected");
 })
     .catch((err) => {
     console.error("❌ DB connection error:", err);

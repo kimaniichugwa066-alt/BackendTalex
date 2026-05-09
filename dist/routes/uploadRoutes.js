@@ -4,9 +4,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const upload_js_1 = __importDefault(require("../middleware/upload.js"));
+const upload_1 = __importDefault(require("../middleware/upload"));
 const router = (0, express_1.Router)();
-router.post("/upload-resume", upload_js_1.default.single("resume"), (req, res) => {
+router.post("/upload-resume", upload_1.default.single("resume"), (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ message: "No file uploaded" });

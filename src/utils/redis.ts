@@ -26,7 +26,7 @@ if (redisUrl && shouldUseTls) {
 if (!useUpstashRest && redisUrl) {
   redis = createClient(redisOptions);
 
-  redis?.on('error', (err) => {
+  redis?.on('error', (err: unknown) => {
     console.error('Redis Client Error', err);
   });
 }

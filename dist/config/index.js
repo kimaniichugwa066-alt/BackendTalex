@@ -9,7 +9,8 @@ dotenv_1.default.config();
 exports.config = {
     port: process.env.PORT || '10000',
     jwtSecret: process.env.JWT_SECRET || 'secret-key',
-    databaseUrl: process.env.DATABASE_URL || '',
+    mongoUri: process.env.MONGO_URI || process.env.DATABASE_URL || '',
+    databaseUrl: process.env.MONGO_URI || process.env.DATABASE_URL || '',
     mpesa: {
         consumerKey: process.env.MPESA_CONSUMER_KEY || '',
         consumerSecret: process.env.MPESA_CONSUMER_SECRET || '',
@@ -29,8 +30,8 @@ exports.config = {
     },
     brevo: {
         apiKey: process.env.BREVO_API_KEY || '',
-        senderEmail: process.env.BREVO_SENDER_EMAIL || '',
-        senderName: process.env.BREVO_SENDER_NAME || 'Talex Team',
+        senderEmail: process.env.BREVO_SENDER_EMAIL || process.env.SENDER_EMAIL || '',
+        senderName: process.env.BREVO_SENDER_NAME || process.env.SENDER_NAME || 'Talex Team',
     },
     supportEmail: process.env.SUPPORT_EMAIL || process.env.EMAIL_USER || '',
     sms: {

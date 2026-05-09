@@ -15,16 +15,30 @@ const register = async (req, res) => {
     console.log("REGISTER BODY:", { ...req.body, password: "***" }); // Mask password for security
     const { name, email, phone, phoneNumber, password } = req.body;
     // Support both phone and phoneNumber for backward compatibility
-    const phoneValue = phone || phoneNumber;
+    const phoneValue = (phone || phoneNumber || '').trim();
     try {
-        const existing = await client_1.default.user.findFirst({ where: { OR: [{ email }, { phone: phoneValue }] } });
+        const whereConditions = [{ email }];
+        if (phoneValue) {
+            whereConditions.push({ phone: phoneValue });
+        }
+        const existing = await client_1.default.user.findFirst({ where: { OR: whereConditions } });
         if (existing) {
             return res.status(409).json((0, apiResponse_1.errorResponse)('Email or phone already in use'));
         }
         const hashedPassword = await bcrypt_1.default.hash(password, 10);
         const verificationToken = jsonwebtoken_1.default.sign({ email }, config_1.config.jwtSecret, { expiresIn: '24h' });
+        const userData = {
+            name: name.trim(),
+            email: email.trim(),
+            password: hashedPassword,
+            role: 'USER',
+            verificationToken,
+        };
+        if (phoneValue) {
+            userData.phone = phoneValue;
+        }
         const user = await client_1.default.user.create({
-            data: { name: name.trim(), email: email.trim(), phone: phoneValue.trim(), password: hashedPassword, role: 'USER', verificationToken },
+            data: userData,
         });
         const token = signToken(user.id, user.role);
         // Send verification email asynchronously
@@ -32,7 +46,11 @@ const register = async (req, res) => {
         res.json((0, apiResponse_1.successResponse)('Registration successful. Please check your email to verify your account.', { token, user: { id: user.id, name: user.name, email: user.email, role: user.role, isVerified: user.isVerified } }));
     }
     catch (error) {
-        res.status(500).json((0, apiResponse_1.errorResponse)('Failed to register user', error));
+        console.log(error);
+        res.status(400).json({
+            success: false,
+            message: error instanceof Error ? error.message : 'Registration failed',
+        });
     }
 };
 exports.register = register;
@@ -41,11 +59,17 @@ const login = async (req, res) => {
         const { email, password } = req.body;
         const user = await client_1.default.user.findUnique({ where: { email } });
         if (!user) {
-            return res.status(401).json((0, apiResponse_1.errorResponse)('Invalid credentials'));
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid email or password',
+            });
         }
-        const isValid = await bcrypt_1.default.compare(password, user.password);
-        if (!isValid) {
-            return res.status(401).json((0, apiResponse_1.errorResponse)('Invalid credentials'));
+        const isMatch = await bcrypt_1.default.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid email or password',
+            });
         }
         if (!user.isVerified) {
             return res.status(403).json((0, apiResponse_1.errorResponse)('Please verify your email before logging in'));
@@ -54,8 +78,11 @@ const login = async (req, res) => {
         res.json((0, apiResponse_1.successResponse)('Login successful', { token, user: { id: user.id, name: user.name, email: user.email, role: user.role } }));
     }
     catch (error) {
-        console.error("LOGIN ERROR:", error);
-        res.status(500).json((0, apiResponse_1.errorResponse)('Server error'));
+        console.log(error);
+        res.status(500).json({
+            success: false,
+            message: error instanceof Error ? error.message : 'Server error',
+        });
     }
 };
 exports.login = login;

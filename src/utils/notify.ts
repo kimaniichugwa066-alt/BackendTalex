@@ -1,11 +1,9 @@
-import { Server as SocketIOServer } from 'socket.io';
+let ioInstance: any = null;
 
-let ioInstance: SocketIOServer | null = null;
-
-export const initializeIO = (io: SocketIOServer) => {
+export const initializeIO = (io: any) => {
   ioInstance = io;
 
-  io.on('connection', (socket) => {
+  io.on('connection', (socket: any) => {
     console.log('🟢 User connected:', socket.id);
 
     socket.on('disconnect', () => {
@@ -14,7 +12,7 @@ export const initializeIO = (io: SocketIOServer) => {
   });
 };
 
-export const getIO = (): SocketIOServer | null => {
+export const getIO = (): any => {
   return ioInstance;
 };
 

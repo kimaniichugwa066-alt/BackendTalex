@@ -80,11 +80,14 @@ export const getApplicationById = async (req: AuthRequest, res: Response) => {
     }
 
     // Format resume URL for download
+    const applicant = application.applicant as any;
+    const applicantData = applicant?.toObject ? applicant.toObject() : applicant;
+
     const formattedApp = {
       ...application.toObject(),
       applicant: {
-        ...((application.applicant as any).toObject ? application.applicant.toObject() : application.applicant),
-        resume: formatResumeUrl((application.applicant as any).resume)
+        ...applicantData,
+        resume: formatResumeUrl(applicant?.resume)
       }
     };
 

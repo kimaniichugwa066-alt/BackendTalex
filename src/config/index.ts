@@ -24,12 +24,10 @@ export const config = {
     user: process.env.EMAIL_USER || '',
     pass: process.env.EMAIL_PASS || '',
   },
-  mongoUri: process.env.MONGO_URI || process.env.DATABASE_URL || '',
-  databaseUrl: process.env.MONGO_URI || process.env.DATABASE_URL || '',
   brevo: {
     apiKey: process.env.BREVO_API_KEY || '',
-    senderEmail: process.env.BREVO_SENDER_EMAIL || '',
-    senderName: process.env.BREVO_SENDER_NAME || 'Talex Team',
+    senderEmail: process.env.BREVO_SENDER_EMAIL || process.env.SENDER_EMAIL || '',
+    senderName: process.env.BREVO_SENDER_NAME || process.env.SENDER_NAME || 'Talex Team',
   },
   supportEmail: process.env.SUPPORT_EMAIL || process.env.EMAIL_USER || '',
 
