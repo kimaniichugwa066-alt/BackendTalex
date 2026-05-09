@@ -71,7 +71,7 @@ const login = async (req, res) => {
                 message: 'Invalid email or password',
             });
         }
-        if (!user.isVerified) {
+        if (!user.isVerified && user.role !== 'ADMIN') {
             return res.status(403).json((0, apiResponse_1.errorResponse)('Please verify your email before logging in'));
         }
         const token = signToken(user.id, user.role);

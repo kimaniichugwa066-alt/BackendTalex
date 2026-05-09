@@ -22,7 +22,6 @@ const profileRoutes_1 = __importDefault(require("./routes/profileRoutes"));
 const supportRoutes_1 = __importDefault(require("./routes/supportRoutes"));
 const errorHandler_1 = require("./middleware/errorHandler");
 const authMiddleware_1 = require("./middleware/authMiddleware");
-const redis_1 = require("./utils/redis");
 const cronJobs_1 = require("./jobs/cronJobs");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
@@ -75,14 +74,6 @@ app.get('/health', async (_req, res) => {
         database: 'connected'
     });
 });
-// Initialize Redis and start cron jobs (optional - won't crash if Redis fails)
-(0, redis_1.connectRedis)().then(() => {
-    console.log('✅ Redis connected');
-    (0, cronJobs_1.startCronJobs)();
-}).catch((error) => {
-    console.warn('⚠️ Redis connection failed (optional):', error.message);
-    console.log('🚀 Starting without Redis - some features may be limited');
-    // Still start cron jobs even if Redis fails
-    (0, cronJobs_1.startCronJobs)();
-});
+// Start cron jobs
+(0, cronJobs_1.startCronJobs)();
 exports.default = app;

@@ -1,48 +1,48 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.invalidateDashboardCache = exports.getCachedDashboardStats = exports.cacheDashboardStats = exports.invalidateJobDetailCache = exports.getCachedJobDetail = exports.cacheJobDetail = exports.invalidateJobsCache = exports.getCachedJobsList = exports.cacheJobsList = exports.CACHE_KEYS = void 0;
-const redis_1 = require("../utils/redis");
+// Cache service - Redis removed, functions are no-ops
 exports.CACHE_KEYS = {
     JOBS_LIST: 'jobs:list',
     JOB_DETAIL: (id) => `jobs:detail:${id}`,
     DASHBOARD_STATS: 'admin:dashboard',
 };
 const cacheJobsList = async (jobs) => {
-    await (0, redis_1.setCache)(exports.CACHE_KEYS.JOBS_LIST, JSON.stringify(jobs), 300); // 5 minutes
+    // No-op - Redis removed
 };
 exports.cacheJobsList = cacheJobsList;
 const getCachedJobsList = async () => {
-    const cached = await (0, redis_1.getCache)(exports.CACHE_KEYS.JOBS_LIST);
-    return cached ? JSON.parse(cached) : null;
+    // No-op - Redis removed
+    return null;
 };
 exports.getCachedJobsList = getCachedJobsList;
 const invalidateJobsCache = async () => {
-    await (0, redis_1.deleteCache)(exports.CACHE_KEYS.JOBS_LIST);
+    // No-op - Redis removed
 };
 exports.invalidateJobsCache = invalidateJobsCache;
 const cacheJobDetail = async (id, job) => {
-    await (0, redis_1.setCache)(exports.CACHE_KEYS.JOB_DETAIL(id), JSON.stringify(job), 600); // 10 minutes
+    // No-op - Redis removed
 };
 exports.cacheJobDetail = cacheJobDetail;
 const getCachedJobDetail = async (id) => {
-    const cached = await (0, redis_1.getCache)(exports.CACHE_KEYS.JOB_DETAIL(id));
-    return cached ? JSON.parse(cached) : null;
+    // No-op - Redis removed
+    return null;
 };
 exports.getCachedJobDetail = getCachedJobDetail;
 const invalidateJobDetailCache = async (id) => {
-    await (0, redis_1.deleteCache)(exports.CACHE_KEYS.JOB_DETAIL(id));
+    // No-op - Redis removed
 };
 exports.invalidateJobDetailCache = invalidateJobDetailCache;
 const cacheDashboardStats = async (stats) => {
-    await (0, redis_1.setCache)(exports.CACHE_KEYS.DASHBOARD_STATS, JSON.stringify(stats), 300); // 5 minutes
+    // No-op - Redis removed
 };
 exports.cacheDashboardStats = cacheDashboardStats;
 const getCachedDashboardStats = async () => {
-    const cached = await (0, redis_1.getCache)(exports.CACHE_KEYS.DASHBOARD_STATS);
-    return cached ? JSON.parse(cached) : null;
+    // No-op - Redis removed
+    return null;
 };
 exports.getCachedDashboardStats = getCachedDashboardStats;
 const invalidateDashboardCache = async () => {
-    await (0, redis_1.deleteCache)(exports.CACHE_KEYS.DASHBOARD_STATS);
+    // No-op - Redis removed
 };
 exports.invalidateDashboardCache = invalidateDashboardCache;

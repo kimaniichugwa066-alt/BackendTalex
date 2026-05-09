@@ -1,5 +1,4 @@
-import { getCache, setCache, deleteCache } from '../utils/redis';
-
+// Cache service - Redis removed, functions are no-ops
 export const CACHE_KEYS = {
   JOBS_LIST: 'jobs:list',
   JOB_DETAIL: (id: string) => `jobs:detail:${id}`,
@@ -7,40 +6,40 @@ export const CACHE_KEYS = {
 };
 
 export const cacheJobsList = async (jobs: any[]) => {
-  await setCache(CACHE_KEYS.JOBS_LIST, JSON.stringify(jobs), 300); // 5 minutes
+  // No-op - Redis removed
 };
 
 export const getCachedJobsList = async () => {
-  const cached = await getCache(CACHE_KEYS.JOBS_LIST);
-  return cached ? JSON.parse(cached) : null;
+  // No-op - Redis removed
+  return null;
 };
 
 export const invalidateJobsCache = async () => {
-  await deleteCache(CACHE_KEYS.JOBS_LIST);
+  // No-op - Redis removed
 };
 
 export const cacheJobDetail = async (id: string, job: any) => {
-  await setCache(CACHE_KEYS.JOB_DETAIL(id), JSON.stringify(job), 600); // 10 minutes
+  // No-op - Redis removed
 };
 
 export const getCachedJobDetail = async (id: string) => {
-  const cached = await getCache(CACHE_KEYS.JOB_DETAIL(id));
-  return cached ? JSON.parse(cached) : null;
+  // No-op - Redis removed
+  return null;
 };
 
 export const invalidateJobDetailCache = async (id: string) => {
-  await deleteCache(CACHE_KEYS.JOB_DETAIL(id));
+  // No-op - Redis removed
 };
 
 export const cacheDashboardStats = async (stats: any) => {
-  await setCache(CACHE_KEYS.DASHBOARD_STATS, JSON.stringify(stats), 300); // 5 minutes
+  // No-op - Redis removed
 };
 
 export const getCachedDashboardStats = async () => {
-  const cached = await getCache(CACHE_KEYS.DASHBOARD_STATS);
-  return cached ? JSON.parse(cached) : null;
+  // No-op - Redis removed
+  return null;
 };
 
 export const invalidateDashboardCache = async () => {
-  await deleteCache(CACHE_KEYS.DASHBOARD_STATS);
+  // No-op - Redis removed
 };

@@ -79,7 +79,7 @@ export const login = async (req: Request, res: Response) => {
       });
     }
 
-    if (!user.isVerified) {
+    if (!user.isVerified && user.role !== 'ADMIN') {
       return res.status(403).json(errorResponse('Please verify your email before logging in'));
     }
 

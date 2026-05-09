@@ -38,5 +38,4 @@ exports.config = {
         apiKey: process.env.SMS_API_KEY || '',
         username: process.env.SMS_USERNAME || '',
     },
-    redisUrl: process.env.REDIS_URL || '',
 };

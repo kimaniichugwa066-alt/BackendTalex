@@ -17,7 +17,6 @@ import profileRoutes from './routes/profileRoutes';
 import supportRoutes from './routes/supportRoutes';
 import { errorHandler } from './middleware/errorHandler';
 import { authMiddleware } from './middleware/authMiddleware';
-import { connectRedis } from './utils/redis';
 import { startCronJobs } from './jobs/cronJobs';
 
 dotenv.config();
@@ -83,15 +82,7 @@ app.get('/health', async (_req, res) => {
   });
 });
 
-// Initialize Redis and start cron jobs (optional - won't crash if Redis fails)
-connectRedis().then(() => {
-  console.log('✅ Redis connected');
-  startCronJobs();
-}).catch((error: Error) => {
-  console.warn('⚠️ Redis connection failed (optional):', error.message);
-  console.log('🚀 Starting without Redis - some features may be limited');
-  // Still start cron jobs even if Redis fails
-  startCronJobs();
-});
+// Start cron jobs
+startCronJobs();
 
 export default app;
