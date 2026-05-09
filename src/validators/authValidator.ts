@@ -13,12 +13,9 @@ export const registerSchema = z.object({
   body: z.object({
     name: z.string().min(2).max(100),
     email: z.string().regex(emailRegex, 'Invalid email format'),
+    password: z.string().regex(passwordRegex, 'Password must be at least 8 characters with uppercase, number, and special character'),
     phone: z.string().regex(internationalPhoneRegex, 'Invalid phone number. Use format: +[country code][number] or [10-15 digits]').optional(),
     phoneNumber: z.string().regex(internationalPhoneRegex, 'Invalid phone number. Use format: +[country code][number] or [10-15 digits]').optional(),
-    password: z.string().regex(passwordRegex, 'Password must be at least 8 characters with uppercase, number, and special character'),
-  }).refine((data) => data.phone || data.phoneNumber, {
-    message: "Either phone or phoneNumber is required",
-    path: ["phone"],
   }),
   params: z.object({}),
   query: z.object({}),

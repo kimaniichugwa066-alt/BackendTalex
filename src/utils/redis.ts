@@ -30,15 +30,6 @@ if (!useUpstashRest && redisUrl) {
   redis.on('error', (err) => {
     console.error('Redis Client Error', err);
   });
-
-  (async () => {
-    try {
-      await redis?.connect();
-      console.log('Redis client connected successfully');
-    } catch (error) {
-      console.warn('Redis connection failed during initialization:', error instanceof Error ? error.message : String(error));
-    }
-  })();
 }
 
 const upstashRequest = async (method: 'get' | 'post', path: string, data?: unknown) => {
@@ -130,14 +121,18 @@ export const connectRedis = async () => {
   }
 
   if (!redis) {
-    throw new Error('Redis client is not initialized. Check REDIS_URL configuration.');
+    console.warn('Redis is not configured. Skipping Redis connection.');
+    return;
   }
 
-  if (!redis.isOpen) {
-    await redis.connect();
+  try {
+    if (!redis.isOpen) {
+      await redis.connect();
+    }
+    console.log('Redis client connected successfully');
+  } catch (error) {
+    console.warn('Redis connection failed during initialization:', error instanceof Error ? error.message : String(error));
   }
-
-  console.log('Using pre-connected Redis client');
 };
 
 export default redis;

@@ -6,7 +6,7 @@ import { registerSchema, loginSchema, forgotPasswordSchema, resetPasswordWithTok
 
 const router = Router();
 
-router.post('/register', upload.single('resume'), validateRequest(registerSchema), register);
+router.post('/register', validateRequest(registerSchema), register);
 router.post('/login', validateRequest(loginSchema), login);
 router.get('/verify/:token', verifyEmail);
 router.post('/refresh', refreshToken);

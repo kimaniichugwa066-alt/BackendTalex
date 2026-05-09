@@ -13,18 +13,35 @@ export const register = async (req: Request, res: Response) => {
   const { name, email, phone, phoneNumber, password } = req.body;
 
   // Support both phone and phoneNumber for backward compatibility
-  const phoneValue = phone || phoneNumber;
+  const phoneValue = (phone || phoneNumber || '').trim();
 
   try {
-    const existing = await prisma.user.findFirst({ where: { OR: [{ email }, { phone: phoneValue }] } });
+    const whereConditions: Array<Record<string, unknown>> = [{ email }];
+    if (phoneValue) {
+      whereConditions.push({ phone: phoneValue });
+    }
+
+    const existing = await prisma.user.findFirst({ where: { OR: whereConditions } });
     if (existing) {
       return res.status(409).json(errorResponse('Email or phone already in use'));
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const verificationToken = jwt.sign({ email }, config.jwtSecret, { expiresIn: '24h' });
+    const userData: any = {
+      name: name.trim(),
+      email: email.trim(),
+      password: hashedPassword,
+      role: 'USER',
+      verificationToken,
+    };
+
+    if (phoneValue) {
+      userData.phone = phoneValue;
+    }
+
     const user = await prisma.user.create({
-      data: { name: name.trim(), email: email.trim(), phone: phoneValue.trim(), password: hashedPassword, role: 'USER', verificationToken },
+      data: userData,
     });
 
     const token = signToken(user.id, user.role);
