@@ -4,7 +4,7 @@ import User from '../models/User';
 import Job from '../models/Job';
 import { successResponse, errorResponse } from '../utils/apiResponse';
 import { AuthRequest } from '../middleware/authMiddleware';
-import { sendEmail } from '../utils/sendEmail';
+import { sendEmail } from '../services/notificationService';
 
 const formatResumeUrl = (url: string) => {
   if (!url) return url;

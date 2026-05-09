@@ -1,7 +1,22 @@
 import axios from 'axios';
 import { config } from '../config';
 
-export const sendEmail = async (to: string, subject: string, html: string) => {
+interface EmailParams {
+  to: string;
+  subject: string;
+  html: string;
+  textContent?: string;
+}
+
+export const sendEmail = async ({ to, subject, html, textContent }: EmailParams) => {
+  if (!config.brevo.apiKey) {
+    throw new Error('Brevo API key is not configured. Set BREVO_API_KEY in your environment variables.');
+  }
+
+  if (!config.brevo.senderEmail) {
+    throw new Error('Brevo sender email is not configured. Set BREVO_SENDER_EMAIL or SENDER_EMAIL in your environment variables.');
+  }
+
   try {
     const response = await axios.post(
       'https://api.brevo.com/v3/smtp/email',
@@ -13,6 +28,7 @@ export const sendEmail = async (to: string, subject: string, html: string) => {
         to: [{ email: to }],
         subject,
         htmlContent: html,
+        textContent: textContent || html.replace(/<[^>]+>/g, ''),
       },
       {
         headers: {
@@ -22,8 +38,10 @@ export const sendEmail = async (to: string, subject: string, html: string) => {
       }
     );
     console.log(`Email sent to ${to}`, response.data);
+    return response.data;
   } catch (error) {
     console.error('Email send error:', error);
+    throw error;
   }
 };
 
@@ -56,7 +74,7 @@ export const sendWelcomeEmail = async (email: string, name: string) => {
     <p>Thank you for joining our platform. Start exploring Canadian job opportunities today.</p>
     <p>Best regards,<br>The Talex Team</p>
   `;
-  await sendEmail(email, 'Welcome to Talex', html);
+  await sendEmail({ to: email, subject: 'Welcome to Talex', html });
 };
 
 export const sendVerificationEmail = async (email: string, name: string, token: string) => {
@@ -70,7 +88,7 @@ export const sendVerificationEmail = async (email: string, name: string, token: 
     <p>This link will expire in 24 hours.</p>
     <p>Best regards,<br>The Talex Team</p>
   `;
-  await sendEmail(email, 'Verify Your Email - Talex', html);
+  await sendEmail({ to: email, subject: 'Verify Your Email - Talex', html });
 };
 
 export const sendApplicationSubmittedEmail = async (email: string, jobTitle: string, trackingNumber: string) => {
@@ -81,7 +99,7 @@ export const sendApplicationSubmittedEmail = async (email: string, jobTitle: str
     <p>You will be notified when there's an update on your application.</p>
     <p>Best regards,<br>The Talex Team</p>
   `;
-  await sendEmail(email, 'Application Submitted', html);
+  await sendEmail({ to: email, subject: 'Application Submitted', html });
 };
 
 export const sendApplicationStatusUpdateEmail = async (email: string, jobTitle: string, status: string) => {
@@ -92,7 +110,7 @@ export const sendApplicationStatusUpdateEmail = async (email: string, jobTitle: 
     <p>Please check your dashboard for more details.</p>
     <p>Best regards,<br>The Talex Team</p>
   `;
-  await sendEmail(email, `Application ${status.replace(/_/g, ' ')}`, html);
+  await sendEmail({ to: email, subject: `Application ${status.replace(/_/g, ' ')}`, html });
 };
 
 export const sendInterviewScheduledEmail = async (email: string, jobTitle: string, date: string, link: string) => {
@@ -103,7 +121,7 @@ export const sendInterviewScheduledEmail = async (email: string, jobTitle: strin
     <p><strong>Link:</strong> <a href="${link}">${link}</a></p>
     <p>Best regards,<br>The Talex Team</p>
   `;
-  await sendEmail(email, 'Interview Scheduled - Talex', html);
+  await sendEmail({ to: email, subject: 'Interview Scheduled - Talex', html });
 };
 
 export const sendOfferEmail = async (email: string, jobTitle: string) => {
@@ -113,7 +131,7 @@ export const sendOfferEmail = async (email: string, jobTitle: string) => {
     <p>Please review the offer details and respond as soon as possible.</p>
     <p>Best regards,<br>The Talex Team</p>
   `;
-  await sendEmail(email, 'Offer Letter - Talex', html);
+  await sendEmail({ to: email, subject: 'Offer Letter - Talex', html });
 };
 
 export const sendHiredEmail = async (email: string, jobTitle: string) => {
@@ -123,7 +141,7 @@ export const sendHiredEmail = async (email: string, jobTitle: string) => {
     <p>We are excited to have you onboard.</p>
     <p>Best regards,<br>The Talex Team</p>
   `;
-  await sendEmail(email, 'You Have Been Hired - Talex', html);
+  await sendEmail({ to: email, subject: 'You Have Been Hired - Talex', html });
 };
 
 export const sendRejectedEmail = async (email: string, jobTitle: string) => {
@@ -134,7 +152,7 @@ export const sendRejectedEmail = async (email: string, jobTitle: string) => {
     <p>We appreciate your interest and encourage you to apply for other opportunities.</p>
     <p>Best regards,<br>The Talex Team</p>
   `;
-  await sendEmail(email, 'Application Update - Talex', html);
+  await sendEmail({ to: email, subject: 'Application Update - Talex', html });
 };
 
 export const sendPasswordResetEmail = async (email: string, name: string, token: string) => {
@@ -150,7 +168,7 @@ export const sendPasswordResetEmail = async (email: string, name: string, token:
     <p>If you didn't request this, please ignore this email.</p>
     <p>Best regards,<br>The Talex Team</p>
   `;
-  await sendEmail(email, 'Reset Your Password - Talex', html);
+  await sendEmail({ to: email, subject: 'Reset Your Password - Talex', html });
 };
 
 export const sendPaymentReminderSMS = async (phone: string, jobTitle: string) => {

@@ -141,7 +141,11 @@ export const replySupportRequest = async (req: Request, res: Response) => {
       <p>Best regards,<br>The Talex Team</p>
     `;
 
-    sendEmail(supportRequest.user.email, `Re: ${supportRequest.subject}`, html).catch(console.error);
+    sendEmail({
+      to: supportRequest.user.email,
+      subject: `Re: ${supportRequest.subject}`,
+      html,
+    }).catch(console.error);
 
     res.json(successResponse('Support request replied', { supportRequest }));
   } catch (error) {

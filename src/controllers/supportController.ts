@@ -27,7 +27,11 @@ export const createSupportRequest = async (req: AuthRequest, res: Response) => {
       <p><strong>Message:</strong><br/>${message}</p>
     `;
 
-    sendEmail(supportEmail, `Support Request: ${subject}`, html).catch(console.error);
+    sendEmail({
+      to: supportEmail,
+      subject: `Support Request: ${subject}`,
+      html,
+    }).catch(console.error);
 
     res.json(successResponse('Support request submitted', { supportRequest }));
   } catch (error) {
