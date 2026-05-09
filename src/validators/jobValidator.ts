@@ -30,7 +30,7 @@ export const updateJobSchema = z.object({
 export const updateApplicationStatusSchema = z.object({
   body: z.object({
     applicationId: z.string().uuid(),
-    status: z.enum(['SUBMITTED', 'REVIEWED', 'SHORTLISTED', 'INTERVIEW', 'APPROVED', 'REJECTED']),
+    status: z.enum(['APPLIED', 'UNDER_REVIEW', 'INTERVIEW_SCHEDULED', 'OFFER_SENT', 'HIRED', 'REJECTED']),
   }),
   params: z.object({}),
   query: z.object({}),

@@ -15,6 +15,7 @@ const applicationRoutes_1 = __importDefault(require("./routes/applicationRoutes"
 const paymentRoutes_1 = __importDefault(require("./routes/paymentRoutes"));
 const uploadRoutes_1 = __importDefault(require("./routes/uploadRoutes"));
 const notificationRoutes_1 = __importDefault(require("./routes/notificationRoutes"));
+const pipelineRoutes_1 = __importDefault(require("./routes/pipelineRoutes"));
 const adminRoutes_1 = __importDefault(require("./routes/adminRoutes"));
 const reportRoutes_1 = __importDefault(require("./routes/reportRoutes"));
 const profileRoutes_1 = __importDefault(require("./routes/profileRoutes"));
@@ -51,6 +52,7 @@ app.use('/api/applications', authMiddleware_1.authMiddleware, applicationRoutes_
 app.use('/api/payments', authMiddleware_1.authMiddleware, paymentRoutes_1.default);
 app.use('/api/upload', authMiddleware_1.authMiddleware, uploadRoutes_1.default);
 app.use('/api/notifications', authMiddleware_1.authMiddleware, notificationRoutes_1.default);
+app.use('/api/pipeline', authMiddleware_1.authMiddleware, pipelineRoutes_1.default);
 app.use('/api/profile', authMiddleware_1.authMiddleware, profileRoutes_1.default);
 app.use('/api/support', authMiddleware_1.authMiddleware, supportRoutes_1.default);
 app.use('/api/admin', authMiddleware_1.authMiddleware, adminRoutes_1.default);

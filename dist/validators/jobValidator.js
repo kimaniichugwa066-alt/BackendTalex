@@ -29,7 +29,7 @@ exports.updateJobSchema = zod_1.z.object({
 exports.updateApplicationStatusSchema = zod_1.z.object({
     body: zod_1.z.object({
         applicationId: zod_1.z.string().uuid(),
-        status: zod_1.z.enum(['SUBMITTED', 'REVIEWED', 'SHORTLISTED', 'INTERVIEW', 'APPROVED', 'REJECTED']),
+        status: zod_1.z.enum(['APPLIED', 'UNDER_REVIEW', 'INTERVIEW_SCHEDULED', 'OFFER_SENT', 'HIRED', 'REJECTED']),
     }),
     params: zod_1.z.object({}),
     query: zod_1.z.object({}),

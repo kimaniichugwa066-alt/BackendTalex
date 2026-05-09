@@ -1,0 +1,15 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const adminMiddleware_1 = require("../middleware/adminMiddleware");
+const validateRequest_1 = require("../middleware/validateRequest");
+const pipelineValidator_1 = require("../validators/pipelineValidator");
+const pipelineController_1 = require("../controllers/pipelineController");
+const router = (0, express_1.Router)();
+router.use(adminMiddleware_1.adminMiddleware);
+router.put('/:id/review', pipelineController_1.reviewApplication);
+router.put('/:id/interview', (0, validateRequest_1.validateRequest)(pipelineValidator_1.scheduleInterviewSchema), pipelineController_1.scheduleInterview);
+router.put('/:id/offer', pipelineController_1.sendOffer);
+router.put('/:id/hire', pipelineController_1.markHired);
+router.put('/:id/reject', pipelineController_1.rejectApplication);
+exports.default = router;

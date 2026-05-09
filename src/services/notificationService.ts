@@ -88,11 +88,53 @@ export const sendApplicationStatusUpdateEmail = async (email: string, jobTitle: 
   const html = `
     <h1>Application Status Update</h1>
     <p>Your application for <strong>${jobTitle}</strong> has been updated.</p>
-    <p>New Status: <strong>${status}</strong></p>
+    <p>New Status: <strong>${status.replace(/_/g, ' ')}</strong></p>
     <p>Please check your dashboard for more details.</p>
     <p>Best regards,<br>The Talex Team</p>
   `;
-  await sendEmail(email, `Application ${status}`, html);
+  await sendEmail(email, `Application ${status.replace(/_/g, ' ')}`, html);
+};
+
+export const sendInterviewScheduledEmail = async (email: string, jobTitle: string, date: string, link: string) => {
+  const html = `
+    <h1>Interview Scheduled</h1>
+    <p>Your interview for <strong>${jobTitle}</strong> has been scheduled.</p>
+    <p><strong>Date:</strong> ${date}</p>
+    <p><strong>Link:</strong> <a href="${link}">${link}</a></p>
+    <p>Best regards,<br>The Talex Team</p>
+  `;
+  await sendEmail(email, 'Interview Scheduled - Talex', html);
+};
+
+export const sendOfferEmail = async (email: string, jobTitle: string) => {
+  const html = `
+    <h1>Offer Sent</h1>
+    <p>Congratulations! An offer has been sent for <strong>${jobTitle}</strong>.</p>
+    <p>Please review the offer details and respond as soon as possible.</p>
+    <p>Best regards,<br>The Talex Team</p>
+  `;
+  await sendEmail(email, 'Offer Letter - Talex', html);
+};
+
+export const sendHiredEmail = async (email: string, jobTitle: string) => {
+  const html = `
+    <h1>Welcome to the Team!</h1>
+    <p>Congratulations! You have been hired for <strong>${jobTitle}</strong>.</p>
+    <p>We are excited to have you onboard.</p>
+    <p>Best regards,<br>The Talex Team</p>
+  `;
+  await sendEmail(email, 'You Have Been Hired - Talex', html);
+};
+
+export const sendRejectedEmail = async (email: string, jobTitle: string) => {
+  const html = `
+    <h1>Application Update</h1>
+    <p>Thank you for applying for <strong>${jobTitle}</strong>.</p>
+    <p>After careful review, we regret to inform you that this role will not be moving forward.</p>
+    <p>We appreciate your interest and encourage you to apply for other opportunities.</p>
+    <p>Best regards,<br>The Talex Team</p>
+  `;
+  await sendEmail(email, 'Application Update - Talex', html);
 };
 
 export const sendPasswordResetEmail = async (email: string, name: string, token: string) => {

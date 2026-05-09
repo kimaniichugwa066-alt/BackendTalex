@@ -24,7 +24,7 @@ const createApplication = async (req, res) => {
                 trackingNumber: `TLX-${Date.now()}`,
                 userId: userId,
                 jobId,
-                status: 'SUBMITTED',
+                status: 'APPLIED',
                 paymentStatus: 'SUCCESS',
                 paymentId,
             },
