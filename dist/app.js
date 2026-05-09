@@ -27,10 +27,23 @@ dotenv_1.default.config();
 const app = (0, express_1.default)();
 app.set('trust proxy', 1); // 👈 MUST BE HERE - Enable trust proxy for rate limiting
 app.use((0, helmet_1.default)());
-// CORS configuration - for production use specific origin, for testing use: app.use(cors());
+// CORS configuration
+const allowedOrigins = [
+    'https://talex-one.vercel.app',
+    'http://localhost:3000',
+];
 app.use((0, cors_1.default)({
-    origin: "https://talex-one.vercel.app/",
-    credentials: true
+    origin: (origin, callback) => {
+        if (!origin)
+            return callback(null, true);
+        const normalizedOrigin = origin.replace(/\/$/, '');
+        if (allowedOrigins.includes(normalizedOrigin)) {
+            return callback(null, true);
+        }
+        callback(new Error('Not allowed by CORS'));
+    },
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    credentials: true,
 }));
 app.use(express_1.default.json({ limit: '10mb' }));
 app.use(express_1.default.urlencoded({ extended: true }));

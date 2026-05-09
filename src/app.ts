@@ -26,10 +26,25 @@ const app = express();
 app.set('trust proxy', 1); // 👈 MUST BE HERE - Enable trust proxy for rate limiting
 
 app.use(helmet());
-// CORS configuration - for production use specific origin, for testing use: app.use(cors());
+// CORS configuration
+const allowedOrigins = [
+  'https://talex-one.vercel.app',
+  'http://localhost:3000',
+];
+
 app.use(cors({
-  origin: "https://talex-one.vercel.app/",
-  credentials: true
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+
+    const normalizedOrigin = origin.replace(/\/$/, '');
+    if (allowedOrigins.includes(normalizedOrigin)) {
+      return callback(null, true);
+    }
+
+    callback(new Error('Not allowed by CORS'));
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  credentials: true,
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
