@@ -51,7 +51,11 @@ export const register = async (req: Request, res: Response) => {
 
     res.json(successResponse('Registration successful. Please check your email to verify your account.', { token, user: { id: user.id, name: user.name, email: user.email, role: user.role, isVerified: user.isVerified } }));
   } catch (error) {
-    res.status(500).json(errorResponse('Failed to register user', error));
+    console.log(error);
+    res.status(400).json({
+      success: false,
+      message: error instanceof Error ? error.message : 'Registration failed',
+    });
   }
 };
 
@@ -61,12 +65,18 @@ export const login = async (req: Request, res: Response) => {
 
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
-      return res.status(401).json(errorResponse('Invalid credentials'));
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid email or password',
+      });
     }
 
-    const isValid = await bcrypt.compare(password, user.password);
-    if (!isValid) {
-      return res.status(401).json(errorResponse('Invalid credentials'));
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid email or password',
+      });
     }
 
     if (!user.isVerified) {
@@ -76,8 +86,11 @@ export const login = async (req: Request, res: Response) => {
     const token = signToken(user.id, user.role);
     res.json(successResponse('Login successful', { token, user: { id: user.id, name: user.name, email: user.email, role: user.role } }));
   } catch (error) {
-    console.error("LOGIN ERROR:", error);
-    res.status(500).json(errorResponse('Server error'));
+    console.log(error);
+    res.status(500).json({
+      success: false,
+      message: error instanceof Error ? error.message : 'Server error',
+    });
   }
 };
 
