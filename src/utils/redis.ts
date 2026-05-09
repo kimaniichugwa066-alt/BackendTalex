@@ -5,7 +5,7 @@ const redisUrl = process.env.REDIS_URL?.trim() || '';
 const upstashRestUrl = process.env.UPSTASH_REDIS_REST_URL?.trim().replace(/\/+$|\s+$/g, '') || '';
 const upstashRestToken = process.env.UPSTASH_REDIS_REST_TOKEN?.trim() || '';
 const useUpstashRest = Boolean(upstashRestUrl && upstashRestToken);
-let redis: RedisClientType | null = null;
+let redis: any = null;
 
 const redisOptions: RedisClientOptions = {
   url: redisUrl,
@@ -20,14 +20,13 @@ if (redisUrl && shouldUseTls) {
   redisOptions.socket = {
     tls: true,
     rejectUnauthorized: false,
-    family: 4,
   };
 }
 
 if (!useUpstashRest && redisUrl) {
   redis = createClient(redisOptions);
 
-  redis.on('error', (err) => {
+  redis?.on('error', (err) => {
     console.error('Redis Client Error', err);
   });
 }

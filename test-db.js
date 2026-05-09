@@ -39,9 +39,9 @@ async function testDatabaseConnection() {
   } catch (error) {
     console.error('❌ Database connection failed:', error.message);
     console.log('\n🔧 Troubleshooting:');
-    console.log('1. Check your DATABASE_URL in .env file');
-    console.log('2. Ensure Neon database is active');
-    console.log('3. Verify SSL mode is set to require');
+    console.log('1. Check your MONGO_URI in .env file');
+    console.log('2. Ensure your MongoDB cluster is accessible');
+    console.log('3. Verify your MongoDB credentials are correct');
     console.log('4. Check network connectivity');
     process.exit(1);
   } finally {

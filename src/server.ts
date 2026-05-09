@@ -5,7 +5,7 @@ import mongoose from 'mongoose';
 dotenv.config();
 
 const PORT = process.env.PORT || 10000;
-const MONGO_URI = process.env.MONGO_URI;
+const MONGO_URI = process.env.MONGO_URI || '';
 
 // Connect to MongoDB
 mongoose.connect(MONGO_URI)

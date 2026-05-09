@@ -57,7 +57,7 @@ export const getUserApplications = async (req: AuthRequest, res: Response) => {
       where: { userId: req.user?.id },
       include: {
         job: {
-          select: { id: true, title: true, company: true, location: true, salary: true, description: true }
+          select: { id: true, title: true, company: true, province: true, salary: true, description: true }
         },
         user: {
           select: { id: true, name: true, email: true }
@@ -69,8 +69,14 @@ export const getUserApplications = async (req: AuthRequest, res: Response) => {
     res.status(500).json(errorResponse('Failed to load applications', error));
   }
 };
+
+export const getApplicationById = async (req: AuthRequest, res: Response) => {
+  try {
+    const application = await prisma.application.findUnique({
+      where: { id: req.params.id },
+      include: {
         job: {
-          select: { id: true, title: true, company: true, location: true, salary: true, description: true }
+          select: { id: true, title: true, company: true, province: true, salary: true, description: true }
         },
         user: {
           select: { id: true, name: true, email: true }
@@ -102,7 +108,7 @@ export const getAllApplications = async (req: AuthRequest, res: Response) => {
           select: { id: true, name: true, email: true }
         },
         job: {
-          select: { id: true, title: true, company: true, location: true, salary: true }
+          select: { id: true, title: true, company: true, province: true, salary: true }
         }
       },
       orderBy: { createdAt: 'desc' }

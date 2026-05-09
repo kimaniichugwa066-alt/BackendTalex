@@ -28,8 +28,8 @@ export const getAllApplications = async (req: AuthRequest, res: Response) => {
     const formattedApplications = applications.map((app: any) => ({
       ...app.toObject(),
       applicant: {
-        ...app.applicant.toObject(),
-        resume: formatResumeUrl(app.applicant.resume)
+        ...((app.applicant as any).toObject ? app.applicant.toObject() : app.applicant),
+        resume: formatResumeUrl((app.applicant as any).resume)
       }
     }));
 
@@ -51,8 +51,8 @@ export const getUserApplications = async (req: AuthRequest, res: Response) => {
     const formattedApplications = applications.map((app: any) => ({
       ...app.toObject(),
       applicant: {
-        ...app.applicant.toObject(),
-        resume: formatResumeUrl(app.applicant.resume)
+        ...((app.applicant as any).toObject ? app.applicant.toObject() : app.applicant),
+        resume: formatResumeUrl((app.applicant as any).resume)
       }
     }));
 
@@ -83,8 +83,8 @@ export const getApplicationById = async (req: AuthRequest, res: Response) => {
     const formattedApp = {
       ...application.toObject(),
       applicant: {
-        ...application.applicant.toObject(),
-        resume: formatResumeUrl(application.applicant.resume)
+        ...((application.applicant as any).toObject ? application.applicant.toObject() : application.applicant),
+        resume: formatResumeUrl((application.applicant as any).resume)
       }
     };
 
