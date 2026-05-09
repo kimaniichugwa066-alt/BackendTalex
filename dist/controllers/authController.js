@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyEmail = exports.resetPassword = exports.forgotPassword = exports.logout = exports.refreshToken = exports.login = exports.register = void 0;
+exports.verifyEmail = exports.resetPassword = exports.forgotPassword = exports.testEmail = exports.logout = exports.refreshToken = exports.login = exports.register = void 0;
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const client_1 = __importDefault(require("../prisma/client"));
@@ -94,6 +94,25 @@ const logout = async (_req, res) => {
     res.json((0, apiResponse_1.successResponse)('Logout successful'));
 };
 exports.logout = logout;
+const testEmail = async (req, res) => {
+    const { email } = req.body;
+    if (!email) {
+        return res.status(400).json((0, apiResponse_1.errorResponse)('Email is required to send a test email'));
+    }
+    try {
+        const response = await (0, notificationService_1.sendEmail)({
+            to: email,
+            subject: 'Talex Brevo Email Test',
+            html: '<h1>Talex Brevo Email Test</h1><p>This is a test email sent from BackendTalex.</p>',
+            textContent: 'This is a test email sent from BackendTalex.',
+        });
+        return res.json((0, apiResponse_1.successResponse)('Test email sent successfully', response));
+    }
+    catch (error) {
+        return res.status(500).json((0, apiResponse_1.errorResponse)('Failed to send test email', error));
+    }
+};
+exports.testEmail = testEmail;
 const forgotPassword = async (req, res) => {
     const { email } = req.body;
     try {

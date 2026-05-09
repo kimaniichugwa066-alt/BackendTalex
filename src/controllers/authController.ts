@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import prisma from '../prisma/client';
 import { config } from '../config';
 import { successResponse, errorResponse } from '../utils/apiResponse';
-import { sendVerificationEmail, sendPasswordResetEmail, sendWelcomeEmail } from '../services/notificationService';
+import { sendVerificationEmail, sendPasswordResetEmail, sendWelcomeEmail, sendEmail } from '../services/notificationService';
 
 const signToken = (userId: string, role: string) => jwt.sign({ userId, role }, config.jwtSecret, { expiresIn: '7d' });
 
@@ -100,6 +100,26 @@ export const refreshToken = async (_req: Request, res: Response) => {
 
 export const logout = async (_req: Request, res: Response) => {
   res.json(successResponse('Logout successful'));
+};
+
+export const testEmail = async (req: Request, res: Response) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).json(errorResponse('Email is required to send a test email'));
+  }
+
+  try {
+    const response = await sendEmail({
+      to: email,
+      subject: 'Talex Brevo Email Test',
+      html: '<h1>Talex Brevo Email Test</h1><p>This is a test email sent from BackendTalex.</p>',
+      textContent: 'This is a test email sent from BackendTalex.',
+    });
+
+    return res.json(successResponse('Test email sent successfully', response));
+  } catch (error) {
+    return res.status(500).json(errorResponse('Failed to send test email', error));
+  }
 };
 
 export const forgotPassword = async (req: Request, res: Response) => {
