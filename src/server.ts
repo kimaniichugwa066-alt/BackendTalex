@@ -1,6 +1,7 @@
 import app from './app';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
+import { createDefaultAdmin } from './utils/seedAdmin';
 
 dotenv.config();
 
@@ -20,6 +21,16 @@ if (MONGO_URI) {
   console.warn("ℹ️ MONGO_URI is not configured. Skipping MongoDB connection.");
 }
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+const startServer = async () => {
+  try {
+    await createDefaultAdmin();
+  } catch (err) {
+    console.error('❌ Default admin creation failed:', err);
+  }
+
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+};
+
+startServer();

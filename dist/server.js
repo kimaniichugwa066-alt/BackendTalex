@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const app_1 = __importDefault(require("./app"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const mongoose_1 = __importDefault(require("mongoose"));
+const seedAdmin_1 = require("./utils/seedAdmin");
 dotenv_1.default.config();
 const PORT = process.env.PORT || 10000;
 const MONGO_URI = process.env.MONGO_URI?.trim();
@@ -22,6 +23,15 @@ if (MONGO_URI) {
 else {
     console.warn("ℹ️ MONGO_URI is not configured. Skipping MongoDB connection.");
 }
-app_1.default.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+const startServer = async () => {
+    try {
+        await (0, seedAdmin_1.createDefaultAdmin)();
+    }
+    catch (err) {
+        console.error('❌ Default admin creation failed:', err);
+    }
+    app_1.default.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+    });
+};
+startServer();

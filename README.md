@@ -110,8 +110,9 @@ npm run create-admin
 
 This creates an admin user with:
 - Email: `admin@talex.com`
-- Password: `admin123`
-- Phone: `+254700000000`
+- Password: `Admin123@`
+
+> The admin user is also seeded automatically on server startup when a database connection is available.
 
 ## API Endpoints
 

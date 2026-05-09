@@ -6,7 +6,7 @@
  */
 
 const { PrismaClient } = require('@prisma/client');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const dotenv = require('dotenv');
 
 // Load environment variables
@@ -20,10 +20,9 @@ async function createAdminUser() {
 
     // Admin user details
     const adminData = {
-      name: 'Admin User',
+      name: 'Talex Admin',
       email: 'admin@talex.com',
-      phone: '+1234567890',
-      password: 'admin123',
+      password: 'Admin123@',
       role: 'ADMIN',
       isVerified: true, // Admin doesn't need email verification
     };
