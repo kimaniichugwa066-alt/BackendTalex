@@ -43,7 +43,7 @@ const register = async (req, res) => {
         const token = signToken(user.id, user.role);
         // Send verification email asynchronously
         (0, notificationService_1.sendVerificationEmail)(user.email, user.name, verificationToken).catch(console.error);
-        res.json((0, apiResponse_1.successResponse)('Registration successful. Please check your email to verify your account.', { token, user: { id: user.id, name: user.name, email: user.email, role: user.role, isVerified: user.isVerified } }));
+        return res.json((0, apiResponse_1.successResponse)('Registration successful. Please check your email to verify your account.', { token, user: { id: user.id, name: user.name, email: user.email, role: user.role, isVerified: user.isVerified } }));
     }
     catch (error) {
         console.log(error);
@@ -75,7 +75,7 @@ const login = async (req, res) => {
             return res.status(403).json((0, apiResponse_1.errorResponse)('Please verify your email before logging in'));
         }
         const token = signToken(user.id, user.role);
-        res.json((0, apiResponse_1.successResponse)('Login successful', { token, user: { id: user.id, name: user.name, email: user.email, role: user.role } }));
+        return res.json((0, apiResponse_1.successResponse)('Login successful', { token, user: { id: user.id, name: user.name, email: user.email, role: user.role } }));
     }
     catch (error) {
         console.log(error);

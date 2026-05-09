@@ -49,7 +49,7 @@ export const register = async (req: Request, res: Response) => {
     // Send verification email asynchronously
     sendVerificationEmail(user.email, user.name, verificationToken).catch(console.error);
 
-    res.json(successResponse('Registration successful. Please check your email to verify your account.', { token, user: { id: user.id, name: user.name, email: user.email, role: user.role, isVerified: user.isVerified } }));
+    return res.json(successResponse('Registration successful. Please check your email to verify your account.', { token, user: { id: user.id, name: user.name, email: user.email, role: user.role, isVerified: user.isVerified } }));
   } catch (error) {
     console.log(error);
     res.status(400).json({
@@ -84,7 +84,7 @@ export const login = async (req: Request, res: Response) => {
     }
 
     const token = signToken(user.id, user.role);
-    res.json(successResponse('Login successful', { token, user: { id: user.id, name: user.name, email: user.email, role: user.role } }));
+    return res.json(successResponse('Login successful', { token, user: { id: user.id, name: user.name, email: user.email, role: user.role } }));
   } catch (error) {
     console.log(error);
     res.status(500).json({
