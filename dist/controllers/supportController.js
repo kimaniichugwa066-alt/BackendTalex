@@ -27,7 +27,11 @@ const createSupportRequest = async (req, res) => {
       <p><strong>Subject:</strong> ${subject}</p>
       <p><strong>Message:</strong><br/>${message}</p>
     `;
-        (0, notificationService_1.sendEmail)(supportEmail, `Support Request: ${subject}`, html).catch(console.error);
+        (0, notificationService_1.sendEmail)({
+            to: supportEmail,
+            subject: `Support Request: ${subject}`,
+            html,
+        }).catch(console.error);
         res.json((0, apiResponse_1.successResponse)('Support request submitted', { supportRequest }));
     }
     catch (error) {

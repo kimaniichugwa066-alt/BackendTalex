@@ -6,7 +6,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendPaymentReminderSMS = exports.sendPasswordResetEmail = exports.sendRejectedEmail = exports.sendHiredEmail = exports.sendOfferEmail = exports.sendInterviewScheduledEmail = exports.sendApplicationStatusUpdateEmail = exports.sendApplicationSubmittedEmail = exports.sendVerificationEmail = exports.sendWelcomeEmail = exports.sendSMS = exports.sendEmail = void 0;
 const axios_1 = __importDefault(require("axios"));
 const config_1 = require("../config");
-const sendEmail = async (to, subject, html) => {
+const sendEmail = async ({ to, subject, html, textContent }) => {
+    if (!config_1.config.brevo.apiKey) {
+        throw new Error('Brevo API key is not configured. Set BREVO_API_KEY in your environment variables.');
+    }
+    if (!config_1.config.brevo.senderEmail) {
+        throw new Error('Brevo sender email is not configured. Set BREVO_SENDER_EMAIL or SENDER_EMAIL in your environment variables.');
+    }
     try {
         const response = await axios_1.default.post('https://api.brevo.com/v3/smtp/email', {
             sender: {
@@ -16,6 +22,7 @@ const sendEmail = async (to, subject, html) => {
             to: [{ email: to }],
             subject,
             htmlContent: html,
+            textContent: textContent || html.replace(/<[^>]+>/g, ''),
         }, {
             headers: {
                 'api-key': config_1.config.brevo.apiKey,
@@ -23,9 +30,11 @@ const sendEmail = async (to, subject, html) => {
             },
         });
         console.log(`Email sent to ${to}`, response.data);
+        return response.data;
     }
     catch (error) {
         console.error('Email send error:', error);
+        throw error;
     }
 };
 exports.sendEmail = sendEmail;
@@ -55,7 +64,7 @@ const sendWelcomeEmail = async (email, name) => {
     <p>Thank you for joining our platform. Start exploring Canadian job opportunities today.</p>
     <p>Best regards,<br>The Talex Team</p>
   `;
-    await (0, exports.sendEmail)(email, 'Welcome to Talex', html);
+    await (0, exports.sendEmail)({ to: email, subject: 'Welcome to Talex', html });
 };
 exports.sendWelcomeEmail = sendWelcomeEmail;
 const sendVerificationEmail = async (email, name, token) => {
@@ -69,7 +78,7 @@ const sendVerificationEmail = async (email, name, token) => {
     <p>This link will expire in 24 hours.</p>
     <p>Best regards,<br>The Talex Team</p>
   `;
-    await (0, exports.sendEmail)(email, 'Verify Your Email - Talex', html);
+    await (0, exports.sendEmail)({ to: email, subject: 'Verify Your Email - Talex', html });
 };
 exports.sendVerificationEmail = sendVerificationEmail;
 const sendApplicationSubmittedEmail = async (email, jobTitle, trackingNumber) => {
@@ -80,7 +89,7 @@ const sendApplicationSubmittedEmail = async (email, jobTitle, trackingNumber) =>
     <p>You will be notified when there's an update on your application.</p>
     <p>Best regards,<br>The Talex Team</p>
   `;
-    await (0, exports.sendEmail)(email, 'Application Submitted', html);
+    await (0, exports.sendEmail)({ to: email, subject: 'Application Submitted', html });
 };
 exports.sendApplicationSubmittedEmail = sendApplicationSubmittedEmail;
 const sendApplicationStatusUpdateEmail = async (email, jobTitle, status) => {
@@ -91,7 +100,7 @@ const sendApplicationStatusUpdateEmail = async (email, jobTitle, status) => {
     <p>Please check your dashboard for more details.</p>
     <p>Best regards,<br>The Talex Team</p>
   `;
-    await (0, exports.sendEmail)(email, `Application ${status.replace(/_/g, ' ')}`, html);
+    await (0, exports.sendEmail)({ to: email, subject: `Application ${status.replace(/_/g, ' ')}`, html });
 };
 exports.sendApplicationStatusUpdateEmail = sendApplicationStatusUpdateEmail;
 const sendInterviewScheduledEmail = async (email, jobTitle, date, link) => {
@@ -102,7 +111,7 @@ const sendInterviewScheduledEmail = async (email, jobTitle, date, link) => {
     <p><strong>Link:</strong> <a href="${link}">${link}</a></p>
     <p>Best regards,<br>The Talex Team</p>
   `;
-    await (0, exports.sendEmail)(email, 'Interview Scheduled - Talex', html);
+    await (0, exports.sendEmail)({ to: email, subject: 'Interview Scheduled - Talex', html });
 };
 exports.sendInterviewScheduledEmail = sendInterviewScheduledEmail;
 const sendOfferEmail = async (email, jobTitle) => {
@@ -112,7 +121,7 @@ const sendOfferEmail = async (email, jobTitle) => {
     <p>Please review the offer details and respond as soon as possible.</p>
     <p>Best regards,<br>The Talex Team</p>
   `;
-    await (0, exports.sendEmail)(email, 'Offer Letter - Talex', html);
+    await (0, exports.sendEmail)({ to: email, subject: 'Offer Letter - Talex', html });
 };
 exports.sendOfferEmail = sendOfferEmail;
 const sendHiredEmail = async (email, jobTitle) => {
@@ -122,7 +131,7 @@ const sendHiredEmail = async (email, jobTitle) => {
     <p>We are excited to have you onboard.</p>
     <p>Best regards,<br>The Talex Team</p>
   `;
-    await (0, exports.sendEmail)(email, 'You Have Been Hired - Talex', html);
+    await (0, exports.sendEmail)({ to: email, subject: 'You Have Been Hired - Talex', html });
 };
 exports.sendHiredEmail = sendHiredEmail;
 const sendRejectedEmail = async (email, jobTitle) => {
@@ -133,7 +142,7 @@ const sendRejectedEmail = async (email, jobTitle) => {
     <p>We appreciate your interest and encourage you to apply for other opportunities.</p>
     <p>Best regards,<br>The Talex Team</p>
   `;
-    await (0, exports.sendEmail)(email, 'Application Update - Talex', html);
+    await (0, exports.sendEmail)({ to: email, subject: 'Application Update - Talex', html });
 };
 exports.sendRejectedEmail = sendRejectedEmail;
 const sendPasswordResetEmail = async (email, name, token) => {
@@ -149,7 +158,7 @@ const sendPasswordResetEmail = async (email, name, token) => {
     <p>If you didn't request this, please ignore this email.</p>
     <p>Best regards,<br>The Talex Team</p>
   `;
-    await (0, exports.sendEmail)(email, 'Reset Your Password - Talex', html);
+    await (0, exports.sendEmail)({ to: email, subject: 'Reset Your Password - Talex', html });
 };
 exports.sendPasswordResetEmail = sendPasswordResetEmail;
 const sendPaymentReminderSMS = async (phone, jobTitle) => {

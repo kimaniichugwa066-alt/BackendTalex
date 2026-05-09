@@ -7,7 +7,7 @@ exports.createApplication = exports.updateApplicationStatus = exports.getApplica
 const Application_1 = __importDefault(require("../models/Application"));
 const Job_1 = __importDefault(require("../models/Job"));
 const apiResponse_1 = require("../utils/apiResponse");
-const sendEmail_1 = require("../utils/sendEmail");
+const notificationService_1 = require("../services/notificationService");
 const formatResumeUrl = (url) => {
     if (!url)
         return url;
@@ -116,7 +116,7 @@ const updateApplicationStatus = async (req, res) => {
         const company = application.job.company;
         // ✅ ACCEPTED EMAIL
         if (status === 'accepted') {
-            await (0, sendEmail_1.sendEmail)({
+            await (0, notificationService_1.sendEmail)({
                 to: email,
                 subject: '🎉 Application Accepted - Talex',
                 html: `
@@ -130,7 +130,7 @@ const updateApplicationStatus = async (req, res) => {
         }
         // ❌ REJECTED EMAIL
         if (status === 'rejected') {
-            await (0, sendEmail_1.sendEmail)({
+            await (0, notificationService_1.sendEmail)({
                 to: email,
                 subject: 'Application Update - Talex',
                 html: `

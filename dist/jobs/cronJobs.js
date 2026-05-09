@@ -46,6 +46,10 @@ const startCronJobs = () => {
                 include: { user: true, job: true },
             });
             for (const app of pendingApplications) {
+                if (!app.user.phone) {
+                    console.log(`Skipping payment reminder for application ${app.id} because user phone is missing.`);
+                    continue;
+                }
                 await (0, notificationService_1.sendPaymentReminderSMS)(app.user.phone, app.job.title);
                 console.log(`Sent payment reminder to ${app.user.phone} for job ${app.job.title}`);
             }

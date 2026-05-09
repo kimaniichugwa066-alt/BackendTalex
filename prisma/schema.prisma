@@ -11,7 +11,7 @@ model User {
   id               String         @id @default(uuid()) @map("_id")
   name             String
   email            String         @unique
-  phone            String         @unique
+  phone            String?        @unique
   password         String
   role             Role           @default(USER)
   isVerified       Boolean        @default(false)
