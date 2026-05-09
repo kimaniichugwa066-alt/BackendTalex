@@ -10,15 +10,13 @@ const signToken = (userId: string, role: string) => jwt.sign({ userId, role }, c
 
 export const register = async (req: Request, res: Response) => {
   console.log("REGISTER BODY:", { ...req.body, password: "***" }); // Mask password for security
-  const { name, email, phoneNumber, password } = req.body;
+  const { name, email, phone, phoneNumber, password } = req.body;
 
-  // Validate required fields
-  if (!name || !email || !phoneNumber || !password) {
-    return res.status(400).json(errorResponse('Validation failed: name, email, phoneNumber, and password are required'));
-  }
+  // Support both phone and phoneNumber for backward compatibility
+  const phoneValue = phone || phoneNumber;
 
   try {
-    const existing = await prisma.user.findFirst({ where: { OR: [{ email }, { phone: phoneNumber }] } });
+    const existing = await prisma.user.findFirst({ where: { OR: [{ email }, { phone: phoneValue }] } });
     if (existing) {
       return res.status(409).json(errorResponse('Email or phone already in use'));
     }
@@ -26,7 +24,7 @@ export const register = async (req: Request, res: Response) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const verificationToken = jwt.sign({ email }, config.jwtSecret, { expiresIn: '24h' });
     const user = await prisma.user.create({
-      data: { name: name.trim(), email: email.trim(), phone: phoneNumber.trim(), password: hashedPassword, role: 'USER', verificationToken },
+      data: { name: name.trim(), email: email.trim(), phone: phoneValue.trim(), password: hashedPassword, role: 'USER', verificationToken },
     });
 
     const token = signToken(user.id, user.role);
@@ -43,10 +41,6 @@ export const register = async (req: Request, res: Response) => {
 export const login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
-
-    if (!email || !password) {
-      return res.status(400).json(errorResponse('Email and password are required'));
-    }
 
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {

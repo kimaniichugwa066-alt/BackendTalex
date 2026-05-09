@@ -12,8 +12,12 @@ exports.registerSchema = zod_1.z.object({
     body: zod_1.z.object({
         name: zod_1.z.string().min(2).max(100),
         email: zod_1.z.string().regex(emailRegex, 'Invalid email format'),
-        phoneNumber: zod_1.z.string().regex(internationalPhoneRegex, 'Invalid phone number. Use format: +[country code][number] or [10-15 digits]'),
+        phone: zod_1.z.string().regex(internationalPhoneRegex, 'Invalid phone number. Use format: +[country code][number] or [10-15 digits]').optional(),
+        phoneNumber: zod_1.z.string().regex(internationalPhoneRegex, 'Invalid phone number. Use format: +[country code][number] or [10-15 digits]').optional(),
         password: zod_1.z.string().regex(passwordRegex, 'Password must be at least 8 characters with uppercase, number, and special character'),
+    }).refine((data) => data.phone || data.phoneNumber, {
+        message: "Either phone or phoneNumber is required",
+        path: ["phone"],
     }),
     params: zod_1.z.object({}),
     query: zod_1.z.object({}),

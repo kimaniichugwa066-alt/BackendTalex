@@ -1,12 +1,13 @@
 import multer from "multer";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
-import cloudinary from "../config/cloudinary.js";
+import cloudinary from "../config/cloudinary";
 
 const storage = new CloudinaryStorage({
   cloudinary,
   params: {
-    folder: "talex-resumes",
-    resource_type: "raw" // REQUIRED for PDF/DOC
+    folder: "resumes",
+    resource_type: "raw", // important for PDFs
+    allowed_formats: ["pdf", "doc", "docx"],
   } as any
 });
 

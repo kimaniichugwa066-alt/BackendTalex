@@ -13,20 +13,18 @@ const notificationService_1 = require("../services/notificationService");
 const signToken = (userId, role) => jsonwebtoken_1.default.sign({ userId, role }, config_1.config.jwtSecret, { expiresIn: '7d' });
 const register = async (req, res) => {
     console.log("REGISTER BODY:", { ...req.body, password: "***" }); // Mask password for security
-    const { name, email, phoneNumber, password } = req.body;
-    // Validate required fields
-    if (!name || !email || !phoneNumber || !password) {
-        return res.status(400).json((0, apiResponse_1.errorResponse)('Validation failed: name, email, phoneNumber, and password are required'));
-    }
+    const { name, email, phone, phoneNumber, password } = req.body;
+    // Support both phone and phoneNumber for backward compatibility
+    const phoneValue = phone || phoneNumber;
     try {
-        const existing = await client_1.default.user.findFirst({ where: { OR: [{ email }, { phone: phoneNumber }] } });
+        const existing = await client_1.default.user.findFirst({ where: { OR: [{ email }, { phone: phoneValue }] } });
         if (existing) {
             return res.status(409).json((0, apiResponse_1.errorResponse)('Email or phone already in use'));
         }
         const hashedPassword = await bcrypt_1.default.hash(password, 10);
         const verificationToken = jsonwebtoken_1.default.sign({ email }, config_1.config.jwtSecret, { expiresIn: '24h' });
         const user = await client_1.default.user.create({
-            data: { name: name.trim(), email: email.trim(), phone: phoneNumber.trim(), password: hashedPassword, role: 'USER', verificationToken },
+            data: { name: name.trim(), email: email.trim(), phone: phoneValue.trim(), password: hashedPassword, role: 'USER', verificationToken },
         });
         const token = signToken(user.id, user.role);
         // Send verification email asynchronously
@@ -41,9 +39,6 @@ exports.register = register;
 const login = async (req, res) => {
     try {
         const { email, password } = req.body;
-        if (!email || !password) {
-            return res.status(400).json((0, apiResponse_1.errorResponse)('Email and password are required'));
-        }
         const user = await client_1.default.user.findUnique({ where: { email } });
         if (!user) {
             return res.status(401).json((0, apiResponse_1.errorResponse)('Invalid credentials'));

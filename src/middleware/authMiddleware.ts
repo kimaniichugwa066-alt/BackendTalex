@@ -28,3 +28,16 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
     return res.status(401).json({ success: false, message: 'Invalid token' });
   }
 };
+
+// 👑 Admin-only middleware
+export const adminOnly = (req: AuthRequest, res: Response, next: NextFunction) => {
+  if (!req.user) {
+    return res.status(401).json({ success: false, message: 'Not authorized' });
+  }
+
+  if (req.user.role !== 'ADMIN' && req.user.role !== 'admin') {
+    return res.status(403).json({ success: false, message: 'Admins only' });
+  }
+
+  next();
+};
