@@ -25,7 +25,7 @@ export const config = {
     pass: process.env.EMAIL_PASS || '',
   },
   brevo: {
-    apiKey: process.env.BREVO_API_KEY || '',
+    apiKey: process.env.BREVO_API_KEY || process.env['BREVO-API-KEY'] || '',
     senderEmail: process.env.BREVO_SENDER_EMAIL || process.env.SENDER_EMAIL || '',
     senderName: process.env.BREVO_SENDER_NAME || process.env.SENDER_NAME || 'Talex Team',
   },
