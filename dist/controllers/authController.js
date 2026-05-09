@@ -4,7 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.verifyEmail = exports.resetPassword = exports.forgotPassword = exports.logout = exports.refreshToken = exports.login = exports.register = void 0;
-const bcrypt_1 = __importDefault(require("bcrypt"));
+const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const client_1 = __importDefault(require("../prisma/client"));
 const config_1 = require("../config");
@@ -25,7 +25,7 @@ const register = async (req, res) => {
         if (existing) {
             return res.status(409).json((0, apiResponse_1.errorResponse)('Email or phone already in use'));
         }
-        const hashedPassword = await bcrypt_1.default.hash(password, 10);
+        const hashedPassword = await bcryptjs_1.default.hash(password, 10);
         const verificationToken = jsonwebtoken_1.default.sign({ email }, config_1.config.jwtSecret, { expiresIn: '24h' });
         const userData = {
             name: name.trim(),
@@ -64,7 +64,7 @@ const login = async (req, res) => {
                 message: 'Invalid email or password',
             });
         }
-        const isMatch = await bcrypt_1.default.compare(password, user.password);
+        const isMatch = await bcryptjs_1.default.compare(password, user.password);
         if (!isMatch) {
             return res.status(400).json({
                 success: false,
@@ -126,7 +126,7 @@ const resetPassword = async (req, res) => {
         if (user.resetToken !== token) {
             return res.status(400).json((0, apiResponse_1.errorResponse)('Invalid reset token'));
         }
-        const hashedPassword = await bcrypt_1.default.hash(newPassword, 10);
+        const hashedPassword = await bcryptjs_1.default.hash(newPassword, 10);
         await client_1.default.user.update({
             where: { email: decoded.email },
             data: { password: hashedPassword, resetToken: null },
