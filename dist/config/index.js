@@ -33,6 +33,10 @@ exports.config = {
         senderEmail: process.env.BREVO_SENDER_EMAIL || process.env.SENDER_EMAIL || '',
         senderName: process.env.BREVO_SENDER_NAME || process.env.SENDER_NAME || 'Talex Team',
     },
+    urls: {
+        frontend: process.env.FRONTEND_URL || 'https://talex-one.vercel.app',
+        backend: process.env.BACKEND_URL || 'https://backendtalex.onrender.com',
+    },
     supportEmail: process.env.SUPPORT_EMAIL || process.env.EMAIL_USER || '',
     sms: {
         apiKey: process.env.SMS_API_KEY || '',

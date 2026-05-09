@@ -49,7 +49,7 @@ export const register = async (req: Request, res: Response) => {
     // Send verification email asynchronously
     sendVerificationEmail(user.email, user.name, verificationToken).catch(console.error);
 
-    return res.json(successResponse('Registration successful. Please check your email to verify your account.', { token, user: { id: user.id, name: user.name, email: user.email, role: user.role, isVerified: user.isVerified } }));
+    return res.json(successResponse('Registration successful. Please check your email to verify your account.', { token, role: user.role, user: { id: user.id, name: user.name, email: user.email, role: user.role, isVerified: user.isVerified } }));
   } catch (error) {
     console.log(error);
     res.status(400).json({
@@ -84,10 +84,10 @@ export const login = async (req: Request, res: Response) => {
     }
 
     const token = signToken(user.id, user.role);
-    return res.json(successResponse('Login successful', { token, user: { id: user.id, name: user.name, email: user.email, role: user.role } }));
+    return res.json(successResponse('Login successful', { token, role: user.role, user: { id: user.id, name: user.name, email: user.email, role: user.role } }));
   } catch (error) {
     console.log(error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: error instanceof Error ? error.message : 'Server error',
     });
@@ -195,7 +195,11 @@ export const verifyEmail = async (req: Request, res: Response) => {
     // Send welcome email after successful verification
     sendWelcomeEmail(user.email, user.name).catch(console.error);
 
-    res.json(successResponse('Email verified successfully'));
+    if (config.urls.frontend) {
+      return res.redirect(`${config.urls.frontend}/login?verified=true`);
+    }
+
+    return res.json(successResponse('Email verified successfully'));
   } catch (error) {
     res.status(400).json(errorResponse('Invalid or expired verification token'));
   }

@@ -68,7 +68,7 @@ const sendWelcomeEmail = async (email, name) => {
 };
 exports.sendWelcomeEmail = sendWelcomeEmail;
 const sendVerificationEmail = async (email, name, token) => {
-    const verificationUrl = `https://talex-one.vercel.app/verify?token=${token}`;
+    const verificationUrl = `${config_1.config.urls.backend}/api/auth/verify/${token}`;
     const html = `
     <h1>Welcome to Talex, ${name}!</h1>
     <p>Thank you for registering with Talex. Please verify your email address to activate your account.</p>

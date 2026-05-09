@@ -43,7 +43,7 @@ const register = async (req, res) => {
         const token = signToken(user.id, user.role);
         // Send verification email asynchronously
         (0, notificationService_1.sendVerificationEmail)(user.email, user.name, verificationToken).catch(console.error);
-        return res.json((0, apiResponse_1.successResponse)('Registration successful. Please check your email to verify your account.', { token, user: { id: user.id, name: user.name, email: user.email, role: user.role, isVerified: user.isVerified } }));
+        return res.json((0, apiResponse_1.successResponse)('Registration successful. Please check your email to verify your account.', { token, role: user.role, user: { id: user.id, name: user.name, email: user.email, role: user.role, isVerified: user.isVerified } }));
     }
     catch (error) {
         console.log(error);
@@ -75,11 +75,11 @@ const login = async (req, res) => {
             return res.status(403).json((0, apiResponse_1.errorResponse)('Please verify your email before logging in'));
         }
         const token = signToken(user.id, user.role);
-        return res.json((0, apiResponse_1.successResponse)('Login successful', { token, user: { id: user.id, name: user.name, email: user.email, role: user.role } }));
+        return res.json((0, apiResponse_1.successResponse)('Login successful', { token, role: user.role, user: { id: user.id, name: user.name, email: user.email, role: user.role } }));
     }
     catch (error) {
         console.log(error);
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
             message: error instanceof Error ? error.message : 'Server error',
         });
@@ -177,7 +177,10 @@ const verifyEmail = async (req, res) => {
         });
         // Send welcome email after successful verification
         (0, notificationService_1.sendWelcomeEmail)(user.email, user.name).catch(console.error);
-        res.json((0, apiResponse_1.successResponse)('Email verified successfully'));
+        if (config_1.config.urls.frontend) {
+            return res.redirect(`${config_1.config.urls.frontend}/login?verified=true`);
+        }
+        return res.json((0, apiResponse_1.successResponse)('Email verified successfully'));
     }
     catch (error) {
         res.status(400).json((0, apiResponse_1.errorResponse)('Invalid or expired verification token'));
