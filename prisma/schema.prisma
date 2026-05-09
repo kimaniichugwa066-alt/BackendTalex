@@ -8,7 +8,7 @@ datasource db {
 }
 
 model User {
-  id               String         @id @default(uuid())
+  id               String         @id @default(uuid()) @map("_id")
   name             String
   email            String         @unique
   phone            String         @unique
@@ -33,7 +33,7 @@ model User {
 }
 
 model SupportRequest {
-  id        String          @id @default(uuid())
+  id        String          @id @default(uuid()) @map("_id")
   user      User            @relation(fields: [userId], references: [id])
   userId    String
   category  SupportCategory
@@ -47,7 +47,7 @@ model SupportRequest {
 }
 
 model Job {
-  id            String        @id @default(uuid())
+  id            String        @id @default(uuid()) @map("_id")
   title         String
   company       String
   description   String
@@ -64,7 +64,7 @@ model Job {
 }
 
 model Application {
-  id             String             @id @default(uuid())
+  id             String             @id @default(uuid()) @map("_id")
   trackingNumber String             @unique
   user           User               @relation(fields: [userId], references: [id])
   userId         String
@@ -79,7 +79,7 @@ model Application {
 }
 
 model Payment {
-  id                String        @id @default(uuid())
+  id                String        @id @default(uuid()) @map("_id")
   checkoutRequestId String?       @unique
   user              User          @relation(fields: [userId], references: [id])
   userId            String
@@ -93,7 +93,7 @@ model Payment {
 }
 
 model Document {
-  id        String   @id @default(uuid())
+  id        String   @id @default(uuid()) @map("_id")
   user      User     @relation(fields: [userId], references: [id])
   userId    String
   type      DocumentType
@@ -102,7 +102,7 @@ model Document {
 }
 
 model Notification {
-  id        String   @id @default(uuid())
+  id        String   @id @default(uuid()) @map("_id")
   user      User     @relation(fields: [userId], references: [id])
   userId    String
   title     String
