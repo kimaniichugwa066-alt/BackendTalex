@@ -1,25 +1,87 @@
-import { createClient } from 'redis';
+import axios from 'axios';
+import { createClient, RedisClientType, RedisClientOptions } from 'redis';
 
-const redis = createClient({
-  url: process.env.REDIS_URL,
-});
+const redisUrl = process.env.REDIS_URL?.trim() || '';
+const upstashRestUrl = process.env.UPSTASH_REDIS_REST_URL?.trim().replace(/\/+$|\s+$/g, '') || '';
+const upstashRestToken = process.env.UPSTASH_REDIS_REST_TOKEN?.trim() || '';
+const useUpstashRest = Boolean(upstashRestUrl && upstashRestToken);
+let redis: RedisClientType | null = null;
 
-redis.on('error', (err) => {
-  console.error('Redis Client Error', err);
-});
+const redisOptions: RedisClientOptions = {
+  url: redisUrl,
+};
 
-(async () => {
-  try {
-    await redis.connect();
-    console.log('Redis client connected successfully');
-  } catch (error) {
-    console.warn('Redis connection failed during initialization:', error instanceof Error ? error.message : String(error));
+if (redisUrl.startsWith('redis://') && process.env.REDIS_TLS === 'true') {
+  redisOptions.socket = {
+    tls: true,
+    rejectUnauthorized: false,
+  };
+}
+
+if (!useUpstashRest && redisUrl) {
+  redis = createClient(redisOptions);
+
+  redis.on('error', (err) => {
+    console.error('Redis Client Error', err);
+  });
+
+  (async () => {
+    try {
+      await redis?.connect();
+      console.log('Redis client connected successfully');
+    } catch (error) {
+      console.warn('Redis connection failed during initialization:', error instanceof Error ? error.message : String(error));
+    }
+  })();
+}
+
+const upstashRequest = async (method: 'get' | 'post', path: string, data?: unknown) => {
+  const url = `${upstashRestUrl}/${path}`;
+  const response = await axios({
+    method,
+    url,
+    headers: {
+      Authorization: `Bearer ${upstashRestToken}`,
+      'Content-Type': 'application/json',
+    },
+    data,
+  });
+  return response.data;
+};
+
+const upstashGet = async (key: string): Promise<string | null> => {
+  const result = await upstashRequest('get', `get/${encodeURIComponent(key)}`);
+  if (result == null) return null;
+  if (typeof result === 'object' && result !== null && 'result' in result) {
+    return result.result ?? null;
   }
-})();
+  return typeof result === 'string' ? result : null;
+};
+
+const upstashSet = async (key: string, value: string, ttlSeconds?: number): Promise<void> => {
+  await upstashRequest('post', `set/${encodeURIComponent(key)}`, { value });
+  if (ttlSeconds) {
+    await upstashRequest('post', `expire/${encodeURIComponent(key)}/${ttlSeconds}`);
+  }
+};
+
+const upstashDel = async (key: string): Promise<void> => {
+  await upstashRequest('post', `del/${encodeURIComponent(key)}`);
+};
+
+const useRedisClient = () => {
+  if (!redis) {
+    throw new Error('Redis client is not initialized. Check REDIS_URL or Upstash REST configuration.');
+  }
+  return redis;
+};
 
 export const getCache = async (key: string): Promise<string | null> => {
   try {
-    return await redis.get(key);
+    if (useUpstashRest) {
+      return await upstashGet(key);
+    }
+    return await useRedisClient().get(key);
   } catch (error) {
     console.error('Redis get error:', error);
     return null;
@@ -28,10 +90,15 @@ export const getCache = async (key: string): Promise<string | null> => {
 
 export const setCache = async (key: string, value: string, ttlSeconds?: number): Promise<void> => {
   try {
+    if (useUpstashRest) {
+      await upstashSet(key, value, ttlSeconds);
+      return;
+    }
+    const client = useRedisClient();
     if (ttlSeconds) {
-      await redis.setEx(key, ttlSeconds, value);
+      await client.setEx(key, ttlSeconds, value);
     } else {
-      await redis.set(key, value);
+      await client.set(key, value);
     }
   } catch (error) {
     console.error('Redis set error:', error);
@@ -40,14 +107,30 @@ export const setCache = async (key: string, value: string, ttlSeconds?: number):
 
 export const deleteCache = async (key: string): Promise<void> => {
   try {
-    await redis.del(key);
+    if (useUpstashRest) {
+      await upstashDel(key);
+      return;
+    }
+    await useRedisClient().del(key);
   } catch (error) {
     console.error('Redis delete error:', error);
   }
 };
 
 export const connectRedis = async () => {
-  // Redis is already connected via IIFE above
+  if (useUpstashRest) {
+    console.log('Using Upstash REST Redis client');
+    return;
+  }
+
+  if (!redis) {
+    throw new Error('Redis client is not initialized. Check REDIS_URL configuration.');
+  }
+
+  if (!redis.isOpen) {
+    await redis.connect();
+  }
+
   console.log('Using pre-connected Redis client');
 };
 
