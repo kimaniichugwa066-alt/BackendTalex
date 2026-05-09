@@ -11,10 +11,16 @@ const redisOptions: RedisClientOptions = {
   url: redisUrl,
 };
 
-if (redisUrl.startsWith('redis://') && process.env.REDIS_TLS === 'true') {
+const shouldUseTls =
+  redisUrl.startsWith('rediss://') ||
+  redisUrl.includes('upstash.io') ||
+  process.env.REDIS_TLS === 'true';
+
+if (redisUrl && shouldUseTls) {
   redisOptions.socket = {
     tls: true,
     rejectUnauthorized: false,
+    family: 4,
   };
 }
 
