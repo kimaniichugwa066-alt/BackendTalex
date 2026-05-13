@@ -71,6 +71,9 @@ const login = async (req, res) => {
                 message: 'Invalid email or password',
             });
         }
+        if (user.isBanned) {
+            return res.status(403).json((0, apiResponse_1.errorResponse)('Your account has been banned. Please contact support.'));
+        }
         if (!user.isVerified && user.role !== 'ADMIN') {
             return res.status(403).json((0, apiResponse_1.errorResponse)('Please verify your email before logging in'));
         }

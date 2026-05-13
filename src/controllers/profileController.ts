@@ -21,6 +21,15 @@ export const getProfile = async (req: AuthRequest, res: Response) => {
         isVerified: true,
         createdAt: true,
         updatedAt: true,
+        documents: {
+          select: {
+            id: true,
+            type: true,
+            url: true,
+            createdAt: true,
+          },
+          orderBy: { createdAt: 'desc' },
+        },
       },
     });
 

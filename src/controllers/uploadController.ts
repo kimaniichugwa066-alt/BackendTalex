@@ -1,8 +1,10 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import cloudinary from 'cloudinary';
 import fs from 'fs';
-import { successResponse, errorResponse } from '../utils/apiResponse';
+import prisma from '../prisma/client';
 import { config } from '../config';
+import { AuthRequest } from '../middleware/authMiddleware';
+import { successResponse, errorResponse } from '../utils/apiResponse';
 
 cloudinary.v2.config({
   cloud_name: config.cloudinary.cloudName,
@@ -10,12 +12,16 @@ cloudinary.v2.config({
   api_secret: config.cloudinary.apiSecret,
 });
 
-export const uploadDocument = async (req: Request, res: Response) => {
+export const uploadDocument = async (req: AuthRequest, res: Response) => {
   const { type } = req.body;
   const file = req.file;
 
   if (!file) {
     return res.status(400).json(errorResponse('File is required'));
+  }
+
+  if (!req.user) {
+    return res.status(401).json(errorResponse('Unauthorized'));
   }
 
   try {
@@ -24,10 +30,38 @@ export const uploadDocument = async (req: Request, res: Response) => {
       folder: 'backendtalex',
     });
 
-    fs.unlinkSync(file.path);
+    if (fs.existsSync(file.path)) {
+      fs.unlinkSync(file.path);
+    }
 
-    res.json(successResponse('Document uploaded', { url: result.secure_url, type }));
+    const document = await prisma.document.create({
+      data: {
+        userId: req.user.id,
+        type: type || 'CV',
+        url: result.secure_url,
+      },
+    });
+
+    res.json(successResponse('Document uploaded', { document }));
   } catch (error) {
     res.status(500).json(errorResponse('Upload failed', error));
+  }
+};
+
+export const getUserDocuments = async (req: AuthRequest, res: Response) => {
+  if (!req.user) {
+    return res.status(401).json(errorResponse('Unauthorized'));
+  }
+
+  try {
+    const documents = await prisma.document.findMany({
+      where: { userId: req.user.id },
+      select: { id: true, type: true, url: true, createdAt: true },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    res.json(successResponse('Documents loaded', { documents }));
+  } catch (error) {
+    res.status(500).json(errorResponse('Failed to load documents', error));
   }
 };

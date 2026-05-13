@@ -146,7 +146,8 @@ This creates an admin user with:
 - `POST /api/payments/verify` - Verify payment status
 
 ### File Upload
-- `POST /api/upload` - Upload resume/CV (Cloudinary)
+- `POST /api/upload/upload-resume` - Upload resume/CV (Cloudinary) and save document record
+- `GET /api/upload/documents` - Get current user's uploaded documents
 
 ### Notifications
 - `GET /api/notifications` - Get user notifications
@@ -161,6 +162,10 @@ This creates an admin user with:
 - `GET /api/admin/support-requests` - View all support requests
 - `PATCH /api/admin/support-requests/reply` - Reply to support request and close it
 - `GET /api/admin/users` - View all users
+- `GET /api/admin/users/:id` - View detailed user information
+- `PATCH /api/admin/users/:id/ban` - Ban or unban a user
+- `PATCH /api/admin/users/:id/password` - Reset a user's password
+- `PATCH /api/admin/users/:id` - Update user details
 - `GET /api/admin/payments` - View all payments
 - `GET /api/admin/dashboard` - Dashboard statistics
 

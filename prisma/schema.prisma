@@ -15,6 +15,7 @@ model User {
   password         String
   role             Role           @default(USER)
   isVerified       Boolean        @default(false)
+  isBanned         Boolean        @default(false)
   verificationToken String?
   resetToken       String?
   headline         String?
