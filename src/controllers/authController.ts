@@ -150,8 +150,14 @@ export const forgotPassword = async (req: Request, res: Response) => {
 };
 
 export const resetPassword = async (req: Request, res: Response) => {
-  const { token, newPassword } = req.body;
+  const { newPassword } = req.body;
+  const token = req.body.token || req.query.token;
+
   try {
+    if (!token || typeof token !== 'string') {
+      return res.status(400).json(errorResponse('Reset token is required'));
+    }
+
     const decoded = jwt.verify(token, config.jwtSecret) as { email: string };
     const user = await prisma.user.findUnique({ where: { email: decoded.email } });
     if (!user) {

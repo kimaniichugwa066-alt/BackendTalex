@@ -44,9 +44,18 @@ exports.forgotPasswordSchema = zod_1.z.object({
 });
 exports.resetPasswordWithTokenSchema = zod_1.z.object({
     body: zod_1.z.object({
-        token: zod_1.z.string(),
+        token: zod_1.z.string().optional(),
         newPassword: zod_1.z.string().regex(passwordRegex, 'Password must be at least 8 characters with uppercase, number, and special character'),
     }),
     params: zod_1.z.object({}),
-    query: zod_1.z.object({}),
+    query: zod_1.z.object({
+        token: zod_1.z.string().optional(),
+    }),
+}).superRefine((data, ctx) => {
+    if (!data.body.token && !data.query.token) {
+        ctx.addIssue({
+            code: zod_1.z.ZodIssueCode.custom,
+            message: 'Reset token is required in either body or query string',
+        });
+    }
 });

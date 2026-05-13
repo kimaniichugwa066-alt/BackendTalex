@@ -138,8 +138,12 @@ const forgotPassword = async (req, res) => {
 };
 exports.forgotPassword = forgotPassword;
 const resetPassword = async (req, res) => {
-    const { token, newPassword } = req.body;
+    const { newPassword } = req.body;
+    const token = req.body.token || req.query.token;
     try {
+        if (!token || typeof token !== 'string') {
+            return res.status(400).json((0, apiResponse_1.errorResponse)('Reset token is required'));
+        }
         const decoded = jsonwebtoken_1.default.verify(token, config_1.config.jwtSecret);
         const user = await client_1.default.user.findUnique({ where: { email: decoded.email } });
         if (!user) {
