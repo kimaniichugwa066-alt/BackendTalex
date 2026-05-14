@@ -25,21 +25,11 @@ export const uploadDocument = async (req: AuthRequest, res: Response) => {
   }
 
   try {
-    let fileUrl = file.path || (file as any).location || (file as any).secure_url || (file as any).url;
-
-    if (!fileUrl && file.path && fs.existsSync(file.path)) {
-      const result = await cloudinary.v2.uploader.upload(file.path, {
-        resource_type: 'auto',
-        folder: 'backendtalex',
-      });
-      fileUrl = result.secure_url;
-      if (fs.existsSync(file.path)) {
-        fs.unlinkSync(file.path);
-      }
-    }
+    // For multer-storage-cloudinary, the file should have a url property
+    let fileUrl = (file as any).secure_url || (file as any).url || file.path;
 
     if (!fileUrl) {
-      return res.status(500).json(errorResponse('Failed to determine uploaded file URL'));
+      return res.status(500).json(errorResponse('Failed to get uploaded file URL'));
     }
 
     const document = await prisma.document.create({
@@ -52,6 +42,7 @@ export const uploadDocument = async (req: AuthRequest, res: Response) => {
 
     res.json(successResponse('Document uploaded', { document }));
   } catch (error) {
+    console.error('Upload error:', error);
     res.status(500).json(errorResponse('Upload failed', error));
   }
 };
