@@ -25,7 +25,7 @@ export const uploadDocument = async (req: AuthRequest, res: Response) => {
   }
 
   try {
-    let fileUrl = file.path || file.location || (file as any).secure_url || (file as any).url;
+    let fileUrl = file.path || (file as any).location || (file as any).secure_url || (file as any).url;
 
     if (!fileUrl && file.path && fs.existsSync(file.path)) {
       const result = await cloudinary.v2.uploader.upload(file.path, {
