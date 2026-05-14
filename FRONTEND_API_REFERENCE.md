@@ -8,13 +8,13 @@ This file contains all backend API endpoints for the Talex frontend. All endpoin
 - **Method**: `POST`
 - **Endpoint**: `/api/auth/register`
 - **Body**: `{ name, email, password, phone? }`
-- **Response**: `{ token, role, user }`
+- **Response**: `{ success, message, data: { token, role, user } }`
 
 ### Login User
 - **Method**: `POST`
 - **Endpoint**: `/api/auth/login`
 - **Body**: `{ email, password }`
-- **Response**: `{ token, role, user }`
+- **Response**: `{ success, message, data: { token, role, user } }`
 
 ### Forgot Password
 - **Method**: `POST`
