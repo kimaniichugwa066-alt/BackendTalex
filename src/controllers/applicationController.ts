@@ -6,10 +6,22 @@ import { sendApplicationSubmittedEmail, sendApplicationStatusUpdateEmail } from 
 import { invalidateDashboardCache } from '../services/cacheService';
 
 export const createApplication = async (req: AuthRequest, res: Response) => {
-  const { jobId, paymentId } = req.body;
+  const { jobId, paymentId, coverLetter } = req.body;
   const userId = req.user?.id;
 
+  if (!coverLetter || coverLetter.trim().length < 20) {
+    return res.status(400).json(errorResponse('Cover letter is required and must be at least 20 characters'));
+  }
+
   try {
+    const passportDocument = await prisma.document.findFirst({
+      where: { userId: userId!, type: 'PASSPORT' },
+    });
+
+    if (!passportDocument) {
+      return res.status(400).json(errorResponse('Passport document must be uploaded before applying'));
+    }
+
     const payment = await prisma.payment.findUnique({ where: { id: paymentId } });
     if (!payment || payment.status !== 'SUCCESS') {
       return res.status(400).json(errorResponse('Payment must be completed before applying'));
@@ -50,7 +62,7 @@ export const createApplication = async (req: AuthRequest, res: Response) => {
     // Invalidate dashboard cache
     invalidateDashboardCache().catch(console.error);
 
-    res.json(successResponse('Application submitted', { application: result }));
+    res.json(successResponse('Application submitted', { application: result, coverLetter, passportDocumentId: passportDocument.id }));
   } catch (error) {
     res.status(500).json(errorResponse('Failed to create application', error));
   }

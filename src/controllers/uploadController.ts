@@ -25,20 +25,28 @@ export const uploadDocument = async (req: AuthRequest, res: Response) => {
   }
 
   try {
-    const result = await cloudinary.v2.uploader.upload(file.path, {
-      resource_type: 'auto',
-      folder: 'backendtalex',
-    });
+    let fileUrl = file.path || file.location || (file as any).secure_url || (file as any).url;
 
-    if (fs.existsSync(file.path)) {
-      fs.unlinkSync(file.path);
+    if (!fileUrl && file.path && fs.existsSync(file.path)) {
+      const result = await cloudinary.v2.uploader.upload(file.path, {
+        resource_type: 'auto',
+        folder: 'backendtalex',
+      });
+      fileUrl = result.secure_url;
+      if (fs.existsSync(file.path)) {
+        fs.unlinkSync(file.path);
+      }
+    }
+
+    if (!fileUrl) {
+      return res.status(500).json(errorResponse('Failed to determine uploaded file URL'));
     }
 
     const document = await prisma.document.create({
       data: {
         userId: req.user.id,
         type: type || 'CV',
-        url: result.secure_url,
+        url: fileUrl,
       },
     });
 

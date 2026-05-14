@@ -1,7 +1,10 @@
 import app from './app';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
+import http from 'http';
+import { Server } from 'socket.io';
 import { createDefaultAdmin } from './utils/seedAdmin';
+import { initializeIO } from './utils/notify';
 
 dotenv.config();
 
@@ -28,7 +31,22 @@ const startServer = async () => {
     console.error('❌ Default admin creation failed:', err);
   }
 
-  app.listen(PORT, () => {
+  const server = http.createServer(app);
+  const io = new Server(server, {
+    cors: {
+      origin: [
+        'https://talex-one.vercel.app',
+        'http://localhost:3000',
+        'https://backendtalex.onrender.com',
+      ],
+      methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
+      credentials: true,
+    },
+  });
+
+  initializeIO(io);
+
+  server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
   });
 };
