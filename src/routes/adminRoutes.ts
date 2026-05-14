@@ -23,7 +23,7 @@ import { adminBanUserSchema, adminResetPasswordSchema, adminUpdateUserSchema } f
 
 const router = Router();
 
-router.use(authMiddleware, adminMiddleware);
+router.use(adminMiddleware);
 
 router.post('/jobs/create', validateRequest(jobSchema), createJob);
 router.put('/jobs/update/:id', validateRequest(updateJobSchema), updateJob);
