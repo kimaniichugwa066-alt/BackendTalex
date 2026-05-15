@@ -49,18 +49,29 @@ export const getJobById = async (req: Request, res: Response) => {
 export const searchJobs = async (req: Request, res: Response) => {
   const { q, province, visaSponsored } = req.query;
   try {
-    const jobs = await prisma.job.findMany({
-      where: {
-        status: 'ACTIVE',
-        OR: q ? [
-          { title: { contains: String(q), mode: Prisma.QueryMode.insensitive } },
-          { company: { contains: String(q), mode: Prisma.QueryMode.insensitive } },
-          { description: { contains: String(q), mode: Prisma.QueryMode.insensitive } },
-        ] : undefined,
-        province: province ? String(province) : undefined,
-        visaSponsored: visaSponsored ? String(visaSponsored).toLowerCase() === 'true' : undefined,
-      },
-    });
+    let jobs;
+    if (q) {
+      // Use raw SQL for case-insensitive search in SQLite
+      jobs = await prisma.$queryRaw`
+        SELECT * FROM Job 
+        WHERE status = 'ACTIVE' 
+        AND (
+          LOWER(title) LIKE LOWER(${`%${String(q)}%`}) 
+          OR LOWER(company) LIKE LOWER(${`%${String(q)}%`}) 
+          OR LOWER(description) LIKE LOWER(${`%${String(q)}%`})
+        )
+        ${province ? Prisma.sql`AND province = ${String(province)}` : Prisma.empty}
+        ${visaSponsored ? Prisma.sql`AND visaSponsored = ${String(visaSponsored).toLowerCase() === 'true'}` : Prisma.empty}
+      `;
+    } else {
+      jobs = await prisma.job.findMany({
+        where: {
+          status: 'ACTIVE',
+          province: province ? String(province) : undefined,
+          visaSponsored: visaSponsored ? String(visaSponsored).toLowerCase() === 'true' : undefined,
+        },
+      });
+    }
     res.json(successResponse('Search results', { jobs }));
   } catch (error) {
     res.status(500).json(errorResponse('Search failed', error));
