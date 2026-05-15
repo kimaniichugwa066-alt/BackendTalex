@@ -1,11 +1,16 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const authController_1 = require("../controllers/authController");
 const validateRequest_1 = require("../middleware/validateRequest");
+const upload_1 = __importDefault(require("../middleware/upload"));
 const authValidator_1 = require("../validators/authValidator");
 const router = (0, express_1.Router)();
-router.post('/register', (0, validateRequest_1.validateRequest)(authValidator_1.registerSchema), authController_1.register);
+router.post('/register', upload_1.default.single('resume'), (0, validateRequest_1.validateRequest)(authValidator_1.registerSchema), authController_1.register);
+router.get('/reset-password', (0, validateRequest_1.validateRequest)(authValidator_1.resetPasswordWithTokenSchema), authController_1.verifyResetPasswordToken);
 router.post('/login', (0, validateRequest_1.validateRequest)(authValidator_1.loginSchema), authController_1.login);
 router.post('/test-email', authController_1.testEmail);
 router.get('/verify/:token', authController_1.verifyEmail);

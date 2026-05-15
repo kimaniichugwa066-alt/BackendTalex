@@ -9,9 +9,18 @@ const apiResponse_1 = require("../utils/apiResponse");
 const notificationService_1 = require("../services/notificationService");
 const cacheService_1 = require("../services/cacheService");
 const createApplication = async (req, res) => {
-    const { jobId, paymentId } = req.body;
+    const { jobId, paymentId, coverLetter } = req.body;
     const userId = req.user?.id;
+    if (!coverLetter || coverLetter.trim().length < 20) {
+        return res.status(400).json((0, apiResponse_1.errorResponse)('Cover letter is required and must be at least 20 characters'));
+    }
     try {
+        const passportDocument = await client_1.default.document.findFirst({
+            where: { userId: userId, type: 'PASSPORT' },
+        });
+        if (!passportDocument) {
+            return res.status(400).json((0, apiResponse_1.errorResponse)('Passport document must be uploaded before applying'));
+        }
         const payment = await client_1.default.payment.findUnique({ where: { id: paymentId } });
         if (!payment || payment.status !== 'SUCCESS') {
             return res.status(400).json((0, apiResponse_1.errorResponse)('Payment must be completed before applying'));
@@ -46,7 +55,7 @@ const createApplication = async (req, res) => {
         (0, notificationService_1.sendApplicationSubmittedEmail)(result.user.email, result.job.title, result.trackingNumber).catch(console.error);
         // Invalidate dashboard cache
         (0, cacheService_1.invalidateDashboardCache)().catch(console.error);
-        res.json((0, apiResponse_1.successResponse)('Application submitted', { application: result }));
+        res.json((0, apiResponse_1.successResponse)('Application submitted', { application: result, coverLetter, passportDocumentId: passportDocument.id }));
     }
     catch (error) {
         res.status(500).json((0, apiResponse_1.errorResponse)('Failed to create application', error));

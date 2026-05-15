@@ -15,7 +15,11 @@ exports.adminBanUserSchema = zod_1.z.object({
 });
 exports.adminResetPasswordSchema = zod_1.z.object({
     body: zod_1.z.object({
-        newPassword: zod_1.z.string().regex(passwordRegex, 'Password must be at least 8 characters with uppercase, number, and special character'),
+        newPassword: zod_1.z.string().regex(passwordRegex, 'Password must be at least 8 characters with uppercase, number, and special character').optional(),
+        password: zod_1.z.string().regex(passwordRegex, 'Password must be at least 8 characters with uppercase, number, and special character').optional(),
+    }).refine((data) => data.newPassword || data.password, {
+        message: 'Password is required',
+        path: ['newPassword'],
     }),
     params: zod_1.z.object({
         id: zod_1.z.string().uuid(),

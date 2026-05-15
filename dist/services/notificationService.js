@@ -146,7 +146,7 @@ const sendRejectedEmail = async (email, jobTitle) => {
 };
 exports.sendRejectedEmail = sendRejectedEmail;
 const sendPasswordResetEmail = async (email, name, token) => {
-    const resetUrl = `https://talex-one.vercel.app/reset-password?token=${token}`;
+    const resetUrl = `${config_1.config.urls.frontend}/reset-password?token=${token}`;
     const html = `
     <h1>Password Reset Request</h1>
     <p>Hi ${name},</p>

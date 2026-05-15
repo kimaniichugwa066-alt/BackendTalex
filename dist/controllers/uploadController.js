@@ -5,7 +5,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getUserDocuments = exports.uploadDocument = void 0;
 const cloudinary_1 = __importDefault(require("cloudinary"));
-const fs_1 = __importDefault(require("fs"));
 const client_1 = __importDefault(require("../prisma/client"));
 const config_1 = require("../config");
 const apiResponse_1 = require("../utils/apiResponse");
@@ -24,23 +23,23 @@ const uploadDocument = async (req, res) => {
         return res.status(401).json((0, apiResponse_1.errorResponse)('Unauthorized'));
     }
     try {
-        const result = await cloudinary_1.default.v2.uploader.upload(file.path, {
-            resource_type: 'auto',
-            folder: 'backendtalex',
-        });
-        if (fs_1.default.existsSync(file.path)) {
-            fs_1.default.unlinkSync(file.path);
+        // For multer-storage-cloudinary, the file may have secure_url, url, path, or filename
+        const fileAny = file;
+        let fileUrl = fileAny.secure_url || fileAny.url || file.path || file.filename;
+        if (!fileUrl) {
+            return res.status(500).json((0, apiResponse_1.errorResponse)('Failed to get uploaded file URL'));
         }
         const document = await client_1.default.document.create({
             data: {
                 userId: req.user.id,
                 type: type || 'CV',
-                url: result.secure_url,
+                url: fileUrl,
             },
         });
         res.json((0, apiResponse_1.successResponse)('Document uploaded', { document }));
     }
     catch (error) {
+        console.error('Upload error:', error);
         res.status(500).json((0, apiResponse_1.errorResponse)('Upload failed', error));
     }
 };

@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getDashboardStats = exports.replySupportRequest = exports.getAllSupportRequests = exports.getAllPayments = exports.updateUser = exports.resetUserPassword = exports.banUser = exports.getAllUsers = exports.getUserById = exports.updateApplicationStatus = exports.getAllApplications = exports.deleteJob = exports.updateJob = exports.createJob = void 0;
+exports.getDashboardStats = exports.replySupportRequest = exports.getAllSupportRequests = exports.getAllPayments = exports.updateUser = exports.deleteUser = exports.resetUserPassword = exports.banUser = exports.getAllUsers = exports.getUserById = exports.updateApplicationStatus = exports.getAllApplications = exports.deleteJob = exports.updateJob = exports.createJob = void 0;
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const client_1 = __importDefault(require("../prisma/client"));
 const apiResponse_1 = require("../utils/apiResponse");
@@ -285,10 +285,14 @@ const banUser = async (req, res) => {
 };
 exports.banUser = banUser;
 const resetUserPassword = async (req, res) => {
-    const { newPassword } = req.body;
+    const { newPassword, password } = req.body;
     const { id } = req.params;
+    const finalPassword = newPassword || password;
+    if (!finalPassword) {
+        return res.status(400).json((0, apiResponse_1.errorResponse)('Password is required'));
+    }
     try {
-        const hashedPassword = await bcryptjs_1.default.hash(newPassword, 10);
+        const hashedPassword = await bcryptjs_1.default.hash(finalPassword, 10);
         const user = await client_1.default.user.update({
             where: { id },
             data: { password: hashedPassword, resetToken: null },
@@ -305,6 +309,17 @@ const resetUserPassword = async (req, res) => {
     }
 };
 exports.resetUserPassword = resetUserPassword;
+const deleteUser = async (req, res) => {
+    const { id } = req.params;
+    try {
+        await client_1.default.user.delete({ where: { id } });
+        res.json((0, apiResponse_1.successResponse)('User deleted successfully'));
+    }
+    catch (error) {
+        res.status(500).json((0, apiResponse_1.errorResponse)('Failed to delete user', error));
+    }
+};
+exports.deleteUser = deleteUser;
 const updateUser = async (req, res) => {
     const { id } = req.params;
     const { name, email, phone, headline, location, summary, experience, education, linkedIn } = req.body;

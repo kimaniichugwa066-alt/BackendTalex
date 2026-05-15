@@ -43,7 +43,7 @@ class TalexTester {
         name: 'Test User',
         email: 'test@example.com',
         phone: '+254712345678',
-        password: 'password123'
+        password: 'Password123!'
       };
 
       const response = await this.client.post('/api/auth/register', userData);
@@ -61,7 +61,7 @@ class TalexTester {
     try {
       const loginData = {
         email: 'test@example.com',
-        password: 'password123'
+        password: 'Password123!'
       };
 
       const response = await this.client.post('/api/auth/login', loginData);
@@ -80,7 +80,7 @@ class TalexTester {
       // Assuming admin user exists with email: admin@talex.com
       const loginData = {
         email: 'admin@talex.com',
-        password: 'admin123'
+        password: 'Admin123@'
       };
 
       const response = await this.client.post('/api/auth/login', loginData);
