@@ -15,7 +15,11 @@ export const adminBanUserSchema = z.object({
 
 export const adminResetPasswordSchema = z.object({
   body: z.object({
-    newPassword: z.string().regex(passwordRegex, 'Password must be at least 8 characters with uppercase, number, and special character'),
+    newPassword: z.string().regex(passwordRegex, 'Password must be at least 8 characters with uppercase, number, and special character').optional(),
+    password: z.string().regex(passwordRegex, 'Password must be at least 8 characters with uppercase, number, and special character').optional(),
+  }).refine((data) => data.newPassword || data.password, {
+    message: 'Password is required',
+    path: ['newPassword'],
   }),
   params: z.object({
     id: z.string().uuid(),

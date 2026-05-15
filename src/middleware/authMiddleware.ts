@@ -10,11 +10,15 @@ export interface AuthRequest extends Request {
 export const authMiddleware = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!authHeader) {
       return res.status(401).json({ success: false, message: 'Unauthorized' });
     }
 
-    const token = authHeader.split(' ')[1];
+    const [scheme, token] = authHeader.split(' ');
+    if (!scheme || scheme.toLowerCase() !== 'bearer' || !token) {
+      return res.status(401).json({ success: false, message: 'Unauthorized' });
+    }
+
     const payload = jwt.verify(token, config.jwtSecret) as { userId: string; role: string };
     const user = await prisma.user.findUnique({ where: { id: payload.userId } });
 

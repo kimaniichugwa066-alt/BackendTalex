@@ -286,10 +286,16 @@ export const banUser = async (req: Request, res: Response) => {
 };
 
 export const resetUserPassword = async (req: Request, res: Response) => {
-  const { newPassword } = req.body;
+  const { newPassword, password } = req.body;
   const { id } = req.params;
+  const finalPassword = newPassword || password;
+
+  if (!finalPassword) {
+    return res.status(400).json(errorResponse('Password is required'));
+  }
+
   try {
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    const hashedPassword = await bcrypt.hash(finalPassword, 10);
     const user = await prisma.user.update({
       where: { id },
       data: { password: hashedPassword, resetToken: null },
@@ -304,6 +310,16 @@ export const resetUserPassword = async (req: Request, res: Response) => {
     res.json(successResponse('User password reset successfully', { user: { id: user.id, email: user.email } }));
   } catch (error) {
     res.status(500).json(errorResponse('Failed to reset user password', error));
+  }
+};
+
+export const deleteUser = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    await prisma.user.delete({ where: { id } });
+    res.json(successResponse('User deleted successfully'));
+  } catch (error) {
+    res.status(500).json(errorResponse('Failed to delete user', error));
   }
 };
 

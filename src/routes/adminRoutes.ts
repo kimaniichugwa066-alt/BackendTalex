@@ -14,6 +14,7 @@ import {
   banUser,
   resetUserPassword,
   updateUser,
+  deleteUser,
   getAllPayments,
   getDashboardStats,
 } from '../controllers/adminController';
@@ -39,7 +40,10 @@ router.patch('/users/:id/ban', validateRequest(adminBanUserSchema), banUser);
 router.post('/users/:id/ban', validateRequest(adminBanUserSchema), banUser);
 router.patch('/users/:id/password', validateRequest(adminResetPasswordSchema), resetUserPassword);
 router.post('/users/:id/password', validateRequest(adminResetPasswordSchema), resetUserPassword);
+router.put('/users/:id/password', validateRequest(adminResetPasswordSchema), resetUserPassword);
 router.patch('/users/:id', validateRequest(adminUpdateUserSchema), updateUser);
+router.put('/users/:id', validateRequest(adminUpdateUserSchema), updateUser);
+router.delete('/users/:id', deleteUser);
 router.get('/payments', getAllPayments);
 router.get('/dashboard', getDashboardStats);
 
