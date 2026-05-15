@@ -19,6 +19,25 @@ A backend scaffold for the Canada Jobs Application Platform.
 - **Email & SMS notifications**
 - **Redis caching for performance**
 - **Background cron jobs for cleanup and reminders**
+- **Frontend plan guide available in `FRONTEND_PLAN.md`**
+
+## Frontend Plan
+
+A dedicated frontend development guide is available in `FRONTEND_PLAN.md`. Use that plan as the design and implementation guide for the client-side application.
+
+### Frontend Features Included in the Plan
+
+- Mobile-first UI/UX tailored for Kenyan Android users
+- Public homepage with trust-building content and CTA sections
+- Jobs browsing page with search, filters, and job cards
+- Job details page with overview, requirements, benefits, salary, and visa sponsorship info
+- Application flow with payment modal, M-Pesa STK push, and submission confirmation
+- User dashboard with application status widgets, recent applications, and quick actions
+- Profile management with personal info and document upload support
+- Application tracking timeline with status colors for submitted/reviewed/approved/rejected
+- Notifications module for payment, application review, and job alerts
+- Admin dashboard for jobs, applications, users, payments, and reports
+- Role-based protected routes for `/dashboard/*` and `/admin/*`
 
 ## Project Structure
 
