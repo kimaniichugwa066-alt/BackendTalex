@@ -26,6 +26,7 @@ const router = Router();
 router.use(adminMiddleware);
 
 router.post('/jobs/create', validateRequest(jobSchema), createJob);
+router.post('/jobs', validateRequest(jobSchema), createJob);
 router.put('/jobs/update/:id', validateRequest(updateJobSchema), updateJob);
 router.delete('/jobs/delete/:id', deleteJob);
 router.get('/applications', getAllApplications);
@@ -35,7 +36,9 @@ router.patch('/support-requests/reply', validateRequest(replySupportRequestSchem
 router.get('/users', getAllUsers);
 router.get('/users/:id', getUserById);
 router.patch('/users/:id/ban', validateRequest(adminBanUserSchema), banUser);
+router.post('/users/:id/ban', validateRequest(adminBanUserSchema), banUser);
 router.patch('/users/:id/password', validateRequest(adminResetPasswordSchema), resetUserPassword);
+router.post('/users/:id/password', validateRequest(adminResetPasswordSchema), resetUserPassword);
 router.patch('/users/:id', validateRequest(adminUpdateUserSchema), updateUser);
 router.get('/payments', getAllPayments);
 router.get('/dashboard', getDashboardStats);

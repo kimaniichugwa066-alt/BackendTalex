@@ -25,8 +25,9 @@ export const uploadDocument = async (req: AuthRequest, res: Response) => {
   }
 
   try {
-    // For multer-storage-cloudinary, the file should have a url property
-    let fileUrl = (file as any).secure_url || (file as any).url || file.path;
+    // For multer-storage-cloudinary, the file may have secure_url, url, path, or filename
+    const fileAny = file as any;
+    let fileUrl = fileAny.secure_url || fileAny.url || file.path || file.filename;
 
     if (!fileUrl) {
       return res.status(500).json(errorResponse('Failed to get uploaded file URL'));
