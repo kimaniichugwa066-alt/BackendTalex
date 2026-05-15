@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { Prisma } from '@prisma/client';
 import prisma from '../prisma/client';
 import { successResponse, errorResponse } from '../utils/apiResponse';
 import { cacheJobsList, getCachedJobsList, cacheJobDetail, getCachedJobDetail } from '../services/cacheService';
@@ -52,9 +53,9 @@ export const searchJobs = async (req: Request, res: Response) => {
       where: {
         status: 'ACTIVE',
         OR: q ? [
-          { title: { contains: String(q), mode: 'insensitive' } },
-          { company: { contains: String(q), mode: 'insensitive' } },
-          { description: { contains: String(q), mode: 'insensitive' } },
+          { title: { contains: String(q), mode: Prisma.QueryMode.insensitive } },
+          { company: { contains: String(q), mode: Prisma.QueryMode.insensitive } },
+          { description: { contains: String(q), mode: Prisma.QueryMode.insensitive } },
         ] : undefined,
         province: province ? String(province) : undefined,
         visaSponsored: visaSponsored ? String(visaSponsored).toLowerCase() === 'true' : undefined,
