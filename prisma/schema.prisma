@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 model User {
@@ -13,8 +13,9 @@ model User {
   email            String         @unique
   phone            String?        @unique
   password         String
-  role             Role           @default(USER)
+  role             String         @default("USER")
   isVerified       Boolean        @default(false)
+  isBanned         Boolean        @default(false)
   verificationToken String?
   resetToken       String?
   headline         String?
@@ -36,10 +37,10 @@ model SupportRequest {
   id        String          @id @default(uuid()) @map("_id")
   user      User            @relation(fields: [userId], references: [id])
   userId    String
-  category  SupportCategory
+  category  String
   subject   String
   message   String
-  status    SupportStatus   @default(OPEN)
+  status    String          @default("OPEN")
   reply     String?
   repliedAt DateTime?
   createdAt DateTime        @default(now())
@@ -57,7 +58,7 @@ model Job {
   province      String
   visaSponsored Boolean       @default(false)
   deadline      DateTime
-  status        JobStatus     @default(ACTIVE)
+  status        String        @default("ACTIVE")
   applications  Application[]
   payments      Payment[]
   createdAt     DateTime      @default(now())
@@ -70,8 +71,8 @@ model Application {
   userId         String
   job            Job                @relation(fields: [jobId], references: [id])
   jobId          String
-  status         ApplicationStatus  @default(APPLIED)
-  paymentStatus  PaymentStatus      @default(PENDING)
+  status         String             @default("APPLIED")
+  paymentStatus  String             @default("PENDING")
   paymentId      String?            @unique
   interviewDate  DateTime?
   interviewLink  String?
@@ -88,7 +89,7 @@ model Payment {
   amount            Int           @default(500)
   mpesaCode         String?
   phone             String
-  status            PaymentStatus @default(PENDING)
+  status            String        @default("PENDING")
   createdAt         DateTime      @default(now())
 }
 
@@ -96,7 +97,7 @@ model Document {
   id        String   @id @default(uuid()) @map("_id")
   user      User     @relation(fields: [userId], references: [id])
   userId    String
-  type      DocumentType
+  type      String
   url       String
   createdAt DateTime @default(now())
 }
@@ -109,47 +110,4 @@ model Notification {
   message   String
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
-}
-
-enum Role {
-  USER
-  ADMIN
-}
-
-enum JobStatus {
-  ACTIVE
-  INACTIVE
-}
-
-enum ApplicationStatus {
-  APPLIED
-  UNDER_REVIEW
-  INTERVIEW_SCHEDULED
-  OFFER_SENT
-  HIRED
-  REJECTED
-}
-
-enum PaymentStatus {
-  PENDING
-  SUCCESS
-  FAILED
-}
-
-enum DocumentType {
-  CV
-  PASSPORT
-  CERTIFICATE
-}
-
-enum SupportCategory {
-  TECHNICAL
-  PAYMENT
-  JOB_POSTING
-  OTHER
-}
-
-enum SupportStatus {
-  OPEN
-  CLOSED
 }

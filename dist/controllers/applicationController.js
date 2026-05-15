@@ -9,9 +9,18 @@ const apiResponse_1 = require("../utils/apiResponse");
 const notificationService_1 = require("../services/notificationService");
 const cacheService_1 = require("../services/cacheService");
 const createApplication = async (req, res) => {
-    const { jobId, paymentId } = req.body;
+    const { jobId, paymentId, coverLetter } = req.body;
     const userId = req.user?.id;
+    if (!coverLetter || coverLetter.trim().length < 20) {
+        return res.status(400).json((0, apiResponse_1.errorResponse)('Cover letter is required and must be at least 20 characters'));
+    }
     try {
+        const passportDocument = await client_1.default.document.findFirst({
+            where: { userId: userId, type: 'PASSPORT' },
+        });
+        if (!passportDocument) {
+            return res.status(400).json((0, apiResponse_1.errorResponse)('Passport document must be uploaded before applying'));
+        }
         const payment = await client_1.default.payment.findUnique({ where: { id: paymentId } });
         if (!payment || payment.status !== 'SUCCESS') {
             return res.status(400).json((0, apiResponse_1.errorResponse)('Payment must be completed before applying'));
@@ -19,30 +28,34 @@ const createApplication = async (req, res) => {
         if (payment.userId !== userId || payment.jobId !== jobId) {
             return res.status(403).json((0, apiResponse_1.errorResponse)('Payment does not match application data'));
         }
-        const application = await client_1.default.application.create({
-            data: {
-                trackingNumber: `TLX-${Date.now()}`,
-                userId: userId,
-                jobId,
-                status: 'APPLIED',
-                paymentStatus: 'SUCCESS',
-                paymentId,
-            },
-            include: { job: true, user: true },
+        // Use transaction to ensure data consistency
+        const result = await client_1.default.$transaction(async (tx) => {
+            const application = await tx.application.create({
+                data: {
+                    trackingNumber: `TLX-${Date.now()}`,
+                    userId: userId,
+                    jobId,
+                    status: 'APPLIED',
+                    paymentStatus: 'SUCCESS',
+                    paymentId,
+                },
+                include: { job: true, user: true },
+            });
+            // Create in-app notification
+            await tx.notification.create({
+                data: {
+                    userId: userId,
+                    title: 'Application Submitted',
+                    message: `Your application for ${application.job.title} has been submitted successfully.`,
+                },
+            });
+            return application;
         });
-        // Send notification email asynchronously
-        (0, notificationService_1.sendApplicationSubmittedEmail)(application.user.email, application.job.title, application.trackingNumber).catch(console.error);
-        // Create in-app notification
-        await client_1.default.notification.create({
-            data: {
-                userId: userId,
-                title: 'Application Submitted',
-                message: `Your application for ${application.job.title} has been submitted successfully.`,
-            },
-        });
+        // Send notification email asynchronously (outside transaction)
+        (0, notificationService_1.sendApplicationSubmittedEmail)(result.user.email, result.job.title, result.trackingNumber).catch(console.error);
         // Invalidate dashboard cache
         (0, cacheService_1.invalidateDashboardCache)().catch(console.error);
-        res.json((0, apiResponse_1.successResponse)('Application submitted', { application }));
+        res.json((0, apiResponse_1.successResponse)('Application submitted', { application: result, coverLetter, passportDocumentId: passportDocument.id }));
     }
     catch (error) {
         res.status(500).json((0, apiResponse_1.errorResponse)('Failed to create application', error));

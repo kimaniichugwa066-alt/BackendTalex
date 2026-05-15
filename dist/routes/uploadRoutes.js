@@ -4,20 +4,20 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
+const cors_1 = __importDefault(require("cors"));
 const upload_1 = __importDefault(require("../middleware/upload"));
+const uploadController_1 = require("../controllers/uploadController");
 const router = (0, express_1.Router)();
-router.post("/upload-resume", upload_1.default.single("resume"), (req, res) => {
-    try {
-        if (!req.file) {
-            return res.status(400).json({ message: "No file uploaded" });
-        }
-        res.json({
-            success: true,
-            fileUrl: req.file.path
-        });
-    }
-    catch (error) {
-        res.status(500).json({ message: "Upload failed" });
-    }
-});
+// Add CORS handling specifically for upload routes
+const uploadCorsOptions = {
+    origin: ['https://talex-one.vercel.app', 'http://localhost:3000'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+    credentials: true,
+};
+router.use((0, cors_1.default)(uploadCorsOptions));
+router.options('*', (0, cors_1.default)(uploadCorsOptions));
+router.post('/', upload_1.default.single('resume'), uploadController_1.uploadDocument);
+router.post('/upload-resume', upload_1.default.single('resume'), uploadController_1.uploadDocument);
+router.get('/documents', uploadController_1.getUserDocuments);
 exports.default = router;

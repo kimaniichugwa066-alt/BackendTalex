@@ -6,10 +6,22 @@ import { sendApplicationSubmittedEmail, sendApplicationStatusUpdateEmail } from 
 import { invalidateDashboardCache } from '../services/cacheService';
 
 export const createApplication = async (req: AuthRequest, res: Response) => {
-  const { jobId, paymentId } = req.body;
+  const { jobId, paymentId, coverLetter } = req.body;
   const userId = req.user?.id;
 
+  if (!coverLetter || coverLetter.trim().length < 20) {
+    return res.status(400).json(errorResponse('Cover letter is required and must be at least 20 characters'));
+  }
+
   try {
+    const passportDocument = await prisma.document.findFirst({
+      where: { userId: userId!, type: 'PASSPORT' },
+    });
+
+    if (!passportDocument) {
+      return res.status(400).json(errorResponse('Passport document must be uploaded before applying'));
+    }
+
     const payment = await prisma.payment.findUnique({ where: { id: paymentId } });
     if (!payment || payment.status !== 'SUCCESS') {
       return res.status(400).json(errorResponse('Payment must be completed before applying'));
@@ -18,34 +30,39 @@ export const createApplication = async (req: AuthRequest, res: Response) => {
       return res.status(403).json(errorResponse('Payment does not match application data'));
     }
 
-    const application = await prisma.application.create({
-      data: {
-        trackingNumber: `TLX-${Date.now()}`,
-        userId: userId!,
-        jobId,
-        status: 'APPLIED',
-        paymentStatus: 'SUCCESS',
-        paymentId,
-      },
-      include: { job: true, user: true },
+    // Use transaction to ensure data consistency
+    const result = await prisma.$transaction(async (tx) => {
+      const application = await tx.application.create({
+        data: {
+          trackingNumber: `TLX-${Date.now()}`,
+          userId: userId!,
+          jobId,
+          status: 'APPLIED',
+          paymentStatus: 'SUCCESS',
+          paymentId,
+        },
+        include: { job: true, user: true },
+      });
+
+      // Create in-app notification
+      await tx.notification.create({
+        data: {
+          userId: userId!,
+          title: 'Application Submitted',
+          message: `Your application for ${application.job.title} has been submitted successfully.`,
+        },
+      });
+
+      return application;
     });
 
-    // Send notification email asynchronously
-    sendApplicationSubmittedEmail(application.user.email, application.job.title, application.trackingNumber).catch(console.error);
-
-    // Create in-app notification
-    await prisma.notification.create({
-      data: {
-        userId: userId!,
-        title: 'Application Submitted',
-        message: `Your application for ${application.job.title} has been submitted successfully.`,
-      },
-    });
+    // Send notification email asynchronously (outside transaction)
+    sendApplicationSubmittedEmail(result.user.email, result.job.title, result.trackingNumber).catch(console.error);
 
     // Invalidate dashboard cache
     invalidateDashboardCache().catch(console.error);
 
-    res.json(successResponse('Application submitted', { application }));
+    res.json(successResponse('Application submitted', { application: result, coverLetter, passportDocumentId: passportDocument.id }));
   } catch (error) {
     res.status(500).json(errorResponse('Failed to create application', error));
   }

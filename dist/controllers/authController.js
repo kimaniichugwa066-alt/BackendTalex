@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyEmail = exports.resetPassword = exports.forgotPassword = exports.testEmail = exports.logout = exports.refreshToken = exports.login = exports.register = void 0;
+exports.verifyEmail = exports.verifyResetPasswordToken = exports.resetPassword = exports.forgotPassword = exports.testEmail = exports.logout = exports.refreshToken = exports.login = exports.register = void 0;
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const client_1 = __importDefault(require("../prisma/client"));
@@ -40,6 +40,19 @@ const register = async (req, res) => {
         const user = await client_1.default.user.create({
             data: userData,
         });
+        const file = req.file;
+        if (file) {
+            const fileUrl = file.secure_url || file.url || file.path || file.filename;
+            if (fileUrl) {
+                await client_1.default.document.create({
+                    data: {
+                        userId: user.id,
+                        type: 'CV',
+                        url: fileUrl,
+                    },
+                });
+            }
+        }
         const token = signToken(user.id, user.role);
         // Send verification email asynchronously
         (0, notificationService_1.sendVerificationEmail)(user.email, user.name, verificationToken).catch(console.error);
@@ -70,6 +83,9 @@ const login = async (req, res) => {
                 success: false,
                 message: 'Invalid email or password',
             });
+        }
+        if (user.isBanned) {
+            return res.status(403).json((0, apiResponse_1.errorResponse)('Your account has been banned. Please contact support.'));
         }
         if (!user.isVerified && user.role !== 'ADMIN') {
             return res.status(403).json((0, apiResponse_1.errorResponse)('Please verify your email before logging in'));
@@ -135,8 +151,12 @@ const forgotPassword = async (req, res) => {
 };
 exports.forgotPassword = forgotPassword;
 const resetPassword = async (req, res) => {
-    const { token, newPassword } = req.body;
+    const { newPassword } = req.body;
+    const token = req.body.token || req.query.token;
     try {
+        if (!token || typeof token !== 'string') {
+            return res.status(400).json((0, apiResponse_1.errorResponse)('Reset token is required'));
+        }
         const decoded = jsonwebtoken_1.default.verify(token, config_1.config.jwtSecret);
         const user = await client_1.default.user.findUnique({ where: { email: decoded.email } });
         if (!user) {
@@ -157,6 +177,27 @@ const resetPassword = async (req, res) => {
     }
 };
 exports.resetPassword = resetPassword;
+const verifyResetPasswordToken = async (req, res) => {
+    const token = req.query.token;
+    if (!token || typeof token !== 'string') {
+        return res.status(400).json((0, apiResponse_1.errorResponse)('Reset token is required'));
+    }
+    try {
+        const decoded = jsonwebtoken_1.default.verify(token, config_1.config.jwtSecret);
+        const user = await client_1.default.user.findUnique({ where: { email: decoded.email } });
+        if (!user || user.resetToken !== token) {
+            return res.status(400).json((0, apiResponse_1.errorResponse)('Invalid or expired reset token'));
+        }
+        if (config_1.config.urls.frontend) {
+            return res.redirect(`${config_1.config.urls.frontend}/reset-password?token=${token}`);
+        }
+        res.json((0, apiResponse_1.successResponse)('Reset token is valid', { email: user.email }));
+    }
+    catch (error) {
+        res.status(400).json((0, apiResponse_1.errorResponse)('Invalid or expired reset token'));
+    }
+};
+exports.verifyResetPasswordToken = verifyResetPasswordToken;
 const verifyEmail = async (req, res) => {
     const { token } = req.params;
     try {

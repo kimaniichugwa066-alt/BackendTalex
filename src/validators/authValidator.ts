@@ -49,9 +49,18 @@ export const forgotPasswordSchema = z.object({
 
 export const resetPasswordWithTokenSchema = z.object({
   body: z.object({
-    token: z.string(),
+    token: z.string().optional(),
     newPassword: z.string().regex(passwordRegex, 'Password must be at least 8 characters with uppercase, number, and special character'),
   }),
   params: z.object({}),
-  query: z.object({}),
+  query: z.object({
+    token: z.string().optional(),
+  }),
+}).superRefine((data, ctx) => {
+  if (!data.body.token && !data.query.token) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Reset token is required in either body or query string',
+    });
+  }
 });

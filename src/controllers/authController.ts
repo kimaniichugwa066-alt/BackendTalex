@@ -44,6 +44,20 @@ export const register = async (req: Request, res: Response) => {
       data: userData,
     });
 
+    const file = req.file as any;
+    if (file) {
+      const fileUrl = file.secure_url || file.url || file.path || file.filename;
+      if (fileUrl) {
+        await prisma.document.create({
+          data: {
+            userId: user.id,
+            type: 'CV',
+            url: fileUrl,
+          },
+        });
+      }
+    }
+
     const token = signToken(user.id, user.role);
 
     // Send verification email asynchronously
@@ -77,6 +91,10 @@ export const login = async (req: Request, res: Response) => {
         success: false,
         message: 'Invalid email or password',
       });
+    }
+
+    if (user.isBanned) {
+      return res.status(403).json(errorResponse('Your account has been banned. Please contact support.'));
     }
 
     if (!user.isVerified && user.role !== 'ADMIN') {
@@ -146,8 +164,14 @@ export const forgotPassword = async (req: Request, res: Response) => {
 };
 
 export const resetPassword = async (req: Request, res: Response) => {
-  const { token, newPassword } = req.body;
+  const { newPassword } = req.body;
+  const token = req.body.token || req.query.token;
+
   try {
+    if (!token || typeof token !== 'string') {
+      return res.status(400).json(errorResponse('Reset token is required'));
+    }
+
     const decoded = jwt.verify(token, config.jwtSecret) as { email: string };
     const user = await prisma.user.findUnique({ where: { email: decoded.email } });
     if (!user) {
@@ -165,6 +189,31 @@ export const resetPassword = async (req: Request, res: Response) => {
     });
 
     res.json(successResponse('Password reset successful'));
+  } catch (error) {
+    res.status(400).json(errorResponse('Invalid or expired reset token'));
+  }
+};
+
+export const verifyResetPasswordToken = async (req: Request, res: Response) => {
+  const token = req.query.token;
+
+  if (!token || typeof token !== 'string') {
+    return res.status(400).json(errorResponse('Reset token is required'));
+  }
+
+  try {
+    const decoded = jwt.verify(token, config.jwtSecret) as { email: string };
+    const user = await prisma.user.findUnique({ where: { email: decoded.email } });
+
+    if (!user || user.resetToken !== token) {
+      return res.status(400).json(errorResponse('Invalid or expired reset token'));
+    }
+
+    if (config.urls.frontend) {
+      return res.redirect(`${config.urls.frontend}/reset-password?token=${token}`);
+    }
+
+    res.json(successResponse('Reset token is valid', { email: user.email }));
   } catch (error) {
     res.status(400).json(errorResponse('Invalid or expired reset token'));
   }

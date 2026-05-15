@@ -10,10 +10,13 @@ const config_1 = require("../config");
 const authMiddleware = async (req, res, next) => {
     try {
         const authHeader = req.headers.authorization;
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        if (!authHeader) {
             return res.status(401).json({ success: false, message: 'Unauthorized' });
         }
-        const token = authHeader.split(' ')[1];
+        const [scheme, token] = authHeader.split(' ');
+        if (!scheme || scheme.toLowerCase() !== 'bearer' || !token) {
+            return res.status(401).json({ success: false, message: 'Unauthorized' });
+        }
         const payload = jsonwebtoken_1.default.verify(token, config_1.config.jwtSecret);
         const user = await client_1.default.user.findUnique({ where: { id: payload.userId } });
         if (!user) {
